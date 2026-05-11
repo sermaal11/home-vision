@@ -17,7 +17,6 @@ Angular limpia, sin plantilla visual ni assets por defecto.
 
 ```text
 .
-├── AGENTS.md
 ├── README.md
 ├── docker-compose.yml
 ├── backend/

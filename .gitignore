@@ -1,22 +1,38 @@
 # Python
 backend/venv/
+venv/
+.venv/
+env/
+ENV/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # Node
 node_modules/
 dist/
 coverage/
 .angular/
+.npm/
+.pnpm-store/
 npm-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # Angular / build output
 tmp/
 out-tsc/
 bazel-out/
 typings/
+.vite/
+.vitest/
 
 # IDEs and editors
 .idea/
@@ -36,12 +52,18 @@ typings/
 
 # Miscellaneous
 AGENTS.md
+.env
+.env.*
+!.env.example
 .sass-cache/
 connect.lock
 libpeerconnection.log
 testem.log
 __screenshots__/
 *.swp
+*.swo
+*.tmp
+*.temp
 
 # System files
 .DS_Store

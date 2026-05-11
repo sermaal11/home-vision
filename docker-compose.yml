@@ -1,7 +1,8 @@
 services:
 
   frontend:
-    image: node:22
+    build:
+      context: ./frontend
     container_name: home-vision-frontend
     working_dir: /app
     volumes:
