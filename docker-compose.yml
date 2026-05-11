@@ -10,7 +10,8 @@ services:
     command: sh -c "npm install && npm start -- --host 0.0.0.0"
 
   backend:
-    image: python:3.12
+    build:
+      context: ./backend
     container_name: home-vision-backend
     working_dir: /app
     volumes:
