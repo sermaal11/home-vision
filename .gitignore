@@ -2,17 +2,47 @@
 backend/venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Node
 node_modules/
+dist/
+coverage/
+.angular/
+npm-debug.log*
+yarn-error.log*
 
-# macOS
-.DS_Store
+# Angular / build output
+tmp/
+out-tsc/
+bazel-out/
+typings/
 
-# VSCode
-.vscode/
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+**/.vscode/*
+!**/.vscode/settings.json
+!**/.vscode/tasks.json
+!**/.vscode/launch.json
+!**/.vscode/extensions.json
+!**/.vscode/mcp.json
+.history/
 
-# Vim
+# Miscellaneous
+AGENTS.md
+.sass-cache/
+connect.lock
+libpeerconnection.log
+testem.log
+__screenshots__/
 *.swp
 
-AGENTS.md
+# System files
+.DS_Store
+Thumbs.db
