@@ -9,23 +9,35 @@ Angular limpia, sin plantilla visual ni assets por defecto.
 - `backend/main.py` crea la instancia `FastAPI` y define `GET /`.
 - `backend/requirements.txt` fija FastAPI, Uvicorn, OpenCV, NumPy y Pydantic.
 - `frontend/` contiene una aplicación Angular 21 con Vitest y Tailwind CSS.
-- `frontend/src/app/` contiene el componente raíz mínimo y una prueba base.
+- `frontend/src/app/` contiene el componente raíz que muestra el estado del backend.
+- `docker-compose.yml` levanta frontend, backend y Nginx para desarrollo con contenedores.
 - `.gitignore` excluye entornos virtuales, caches, `node_modules/`, `dist/` y cobertura.
 
 ## Estructura
 
 ```text
 .
+├── AGENTS.md
 ├── README.md
+├── docker-compose.yml
 ├── backend/
 │   ├── main.py
 │   └── requirements.txt
+├── docker/
+│   └── nginx/
+│       └── default.conf
 └── frontend/
     ├── angular.json
+    ├── package-lock.json
     ├── package.json
     ├── public/
     └── src/
         ├── app/
+        │   ├── app.config.ts
+        │   ├── app.css
+        │   ├── app.html
+        │   ├── app.spec.ts
+        │   └── app.ts
         ├── index.html
         ├── main.ts
         └── styles.css
@@ -71,7 +83,8 @@ npm install
 npm start
 ```
 
-La app se sirve en `http://localhost:4200/`.
+La app se sirve en `http://localhost:4200/` y consume el backend en
+`http://localhost:8000/`.
 
 Comandos útiles:
 
@@ -82,6 +95,19 @@ npm test
 
 `npm run build` genera la build de producción. `npm test` ejecuta las pruebas
 unitarias configuradas por Angular/Vitest.
+
+## Docker
+
+Levantar todos los servicios:
+
+```sh
+docker compose up
+```
+
+Con Docker Compose, Nginx sirve el frontend en `http://localhost:8080/` y el
+backend queda expuesto directamente en `http://localhost:8000/`. El frontend
+usa esa URL del backend tanto desde `localhost:4200` como desde
+`localhost:8080`.
 
 Generar nuevos elementos con Angular CLI:
 

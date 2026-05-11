@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +6,22 @@ import { Component } from '@angular/core';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = 'home-vision';
+  message = signal('Conectando con backend...');
+
+  constructor() {
+    this.loadBackendMessage();
+  }
+
+  async loadBackendMessage() {
+    try {
+      const response = await fetch('http://localhost:8000/');
+      const data = await response.json();
+      console.log(data);
+      this.message.set(data.message);
+      console.log(this.message());
+    } catch (error) {
+      console.error(error);
+      this.message.set('Error conectando backend');
+    }
+  }
 }
