@@ -4,6 +4,8 @@ import { App } from './app';
 describe('App', () => {
   beforeEach(() => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
       json: async () => ({ message: 'Backend is running!' }),
     } as Response);
   });

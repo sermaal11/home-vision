@@ -1,17 +1,32 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import Response
-import cv2
-import numpy as np
+from app.services.frame_service import decode_frame
+from app.services.frame_service import to_grayscale
+from app.services.frame_service import encode_frame
 
 router = APIRouter()
 
 @router.post("/frame")
 async def receive_frame(frame: UploadFile = File(...)):
     content = await frame.read()
-    np_array = np.frombuffer(content, np.uint8)
-    decoded_frame = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+    decoded_frame = decode_frame(content)
     if decoded_frame is None:
         raise HTTPException(status_code=400, detail="Invalid image frame")
-    gray_frame = cv2.cvtColor(decoded_frame, cv2.COLOR_BGR2GRAY)
-    _, buffer = cv2.imencode('.jpg', gray_frame)
-    return Response(buffer.tobytes(), media_type="image/jpeg")
+    try:
+        encoded_frame = encode_frame(decoded_frame)
+    except ValueError as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error
+    return Response(encoded_frame, media_type="image/jpeg")
+
+@router.post("/frame/grayscale")
+async def receive_grayscale_frame(frame: UploadFile = File(...)):
+    content = await frame.read()
+    decoded_frame = decode_frame(content)
+    if decoded_frame is None:
+        raise HTTPException(status_code=400, detail="Invalid image frame")
+    gray_frame = to_grayscale(decoded_frame)
+    try:
+        encoded_frame = encode_frame(gray_frame)
+    except ValueError as error:
+        raise HTTPException(status_code=500, detail=str(error)) from error
+    return Response(encoded_frame, media_type="image/jpeg")

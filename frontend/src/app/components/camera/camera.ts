@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, signal, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, OnDestroy, signal, ViewChild } from "@angular/core";
 import { NgIf } from "@angular/common";
 import { ApiService } from "../../services/api.service";
 
@@ -9,8 +9,8 @@ import { ApiService } from "../../services/api.service";
 	imports: [NgIf],
 })
 
-export class CameraComponent implements AfterViewInit {
-	
+export class CameraComponent implements AfterViewInit, OnDestroy {
+
 	@ViewChild('videoElement')
 	videoElement!: ElementRef<HTMLVideoElement>;
 
@@ -19,38 +19,94 @@ export class CameraComponent implements AfterViewInit {
 
 	constructor(private apiService: ApiService) {}
 
-	processedFrameUrl = signal('');
-	private latestProcessedFrameUrl = '';
+	grayscaleFrameUrl = signal('');
+
+	private latestGrayscaleFrameUrl = '';
+	private captureIntervalId?: ReturnType<typeof setInterval>;
+	private isCapturingFrame = false;
+	private stream?: MediaStream;
 
 	async ngAfterViewInit() {
 		try {
-			const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-			this.videoElement.nativeElement.srcObject = stream;
-			setInterval(() => this.captureFrame(), 100); // Capture a frame every second
+			if (!navigator.mediaDevices?.getUserMedia) {
+				return;
+			}
+
+			this.stream = await navigator.mediaDevices.getUserMedia({
+				video: true
+			});
+
+			this.videoElement.nativeElement.srcObject = this.stream;
+
+			this.captureIntervalId = setInterval(() => this.captureFrame(), 100);
+
 		} catch (error) {
+
 			console.error("Error accessing camera: ", error);
 		}
 	}
 
 	captureFrame() {
+		if (this.isCapturingFrame)
+			return;
+
 		const video = this.videoElement.nativeElement;
+
+		if (!video.videoWidth || !video.videoHeight)
+			return;
+
 		const canvas = this.canvasElement.nativeElement;
+
 		const context = canvas.getContext('2d');
+
 		if (!context)
 			return;
+
 		canvas.width = video.videoWidth;
+
 		canvas.height = video.videoHeight;
+
 		context.drawImage(video, 0, 0);
+
+		this.isCapturingFrame = true;
+
 		canvas.toBlob(async (blob) => {
-			if (!blob)
+
+			if (!blob) {
+				this.isCapturingFrame = false;
 				return;
-			const response = await this.apiService.sendFrame(blob);
-			const nextFrameUrl = URL.createObjectURL(response);
-			if (this.latestProcessedFrameUrl) {
-				URL.revokeObjectURL(this.latestProcessedFrameUrl);
 			}
-			this.latestProcessedFrameUrl = nextFrameUrl;
-			this.processedFrameUrl.set(nextFrameUrl);
+
+			try {
+				const response = await this.apiService.getGrayscaleFrame(blob);
+
+				const nextFrameUrl = URL.createObjectURL(response);
+
+				if (this.latestGrayscaleFrameUrl) {
+
+					URL.revokeObjectURL(this.latestGrayscaleFrameUrl);
+				}
+
+				this.latestGrayscaleFrameUrl = nextFrameUrl;
+
+				this.grayscaleFrameUrl.set(nextFrameUrl);
+			} catch (error) {
+				console.error("Error processing camera frame: ", error);
+			} finally {
+				this.isCapturingFrame = false;
+			}
 		}, 'image/jpeg');
-	} 
+	}
+
+	ngOnDestroy() {
+		if (this.captureIntervalId) {
+			clearInterval(this.captureIntervalId);
+		}
+
+		this.stream?.getTracks().forEach((track) => track.stop());
+
+		if (this.latestGrayscaleFrameUrl) {
+			URL.revokeObjectURL(this.latestGrayscaleFrameUrl);
+		}
+	}
 }

@@ -17,13 +17,10 @@ export class App {
   async loadBackendMessage() {
     try {
       const data = await this.apiService.getHealth();
-      console.log(data);
       this.message.set(data.message);
-      console.log(this.message());
     } catch (error) {
       console.error(error);
       this.message.set('Error conectando backend');
     }
   }
 }
-
