@@ -5,6 +5,7 @@ import { API_CONFIG } from "../config/api.config";
 	providedIn: "root",
 })
 export class ApiService {
+
 	async getHealth() {
 		const response = await fetch(API_CONFIG.health);
 		return await response.json();
@@ -17,7 +18,6 @@ export class ApiService {
 			method: "POST",
 			body: formData,
 		});
-		return await response.json();
-		
+		return await response.blob();
 	}
 }

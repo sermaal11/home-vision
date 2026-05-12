@@ -12,13 +12,13 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 - Separar responsabilidades entre backend, frontend y proxy HTTP.
 - Validar la comunicación entre Angular y FastAPI en entorno local.
 - Probar captura de vídeo desde el navegador como base para futuras funciones de visión.
-- Preparar el repositorio para incorporar procesamiento con OpenCV en fases posteriores.
+- Procesar frames en el backend con OpenCV y devolver una vista en escala de grises.
 
 ## Tecnologías utilizadas
 
 | Área | Tecnología |
 | --- | --- |
-| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV, NumPy |
+| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV headless, NumPy |
 | Frontend | Angular 21, TypeScript, Tailwind CSS, Vitest |
 | Infraestructura | Docker, Docker Compose, Nginx |
 
@@ -66,8 +66,9 @@ rutas bajo el prefijo `/api`:
 
 - `GET /api/health`: delega en `backend/app/services/system_service.py` y
   devuelve el estado básico del sistema.
-- `POST /api/frame`: recibe un archivo multipart en el campo `frame`; se usa
-  para enviar capturas JPEG desde la cámara del navegador.
+- `POST /api/frame`: recibe un archivo multipart en el campo `frame`, decodifica
+  el JPEG con OpenCV, lo transforma a escala de grises y devuelve otro JPEG con
+  `Content-Type: image/jpeg`.
 
 Respuesta actual de `GET /api/health`:
 
@@ -81,10 +82,12 @@ El frontend muestra el título `Home Vision`, consulta ese endpoint desde
 `frontend/src/app/components/camera/`.
 
 El componente `CameraComponent` usa `navigator.mediaDevices.getUserMedia` para
-pedir acceso a la cámara, mostrar el vídeo en un elemento `<video>`, capturar
-frames en un `<canvas>` oculto y enviarlos al backend como `multipart/form-data`
-al endpoint `/api/frame`. Esta API requiere un contexto seguro en navegadores
-modernos, por eso Nginx se sirve por HTTPS local.
+pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
+capturar frames en un `<canvas>` oculto y enviarlos al backend como
+`multipart/form-data` al endpoint `/api/frame`. La respuesta se consume como
+`Blob`, se convierte en una URL temporal y se muestra al lado del vídeo original
+como imagen procesada en escala de grises. Esta API requiere un contexto seguro
+en navegadores modernos, por eso Nginx se sirve por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y `/api/frame`
 sobre el mismo origen (`https://localhost:8443` o `https://homelab:8443`) y
@@ -118,7 +121,7 @@ URLs principales:
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Frontend Angular: `http://localhost:4200/`
 
-Nota: el frontend usa `/api/health` como ruta relativa. En Docker funciona por
+Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
 Nginx. Si ejecutas Angular directamente en `4200`, asegúrate de servir o
 proxificar `/api/` hacia el backend. Para probar la cámara, usa un origen
 seguro; la ruta recomendada es Nginx con HTTPS.
@@ -166,8 +169,10 @@ Estado auditado:
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
 - Endpoint de salud del backend disponible en `/api/health`.
-- Endpoint `/api/frame` disponible para recibir frames multipart en el campo `frame`.
+- Endpoint `/api/frame` disponible para recibir frames multipart en el campo `frame`
+  y devolver un JPEG en escala de grises.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
+- Visualización lado a lado del vídeo original y la imagen procesada.
 - No existe todavía una suite de pruebas backend.
 
 ## Estado y trabajo futuro
@@ -176,10 +181,10 @@ El proyecto se encuentra en una fase inicial. La integración base entre
 frontend y backend ya está validada, pero todavía falta implementar el dominio
 principal de visión doméstica. Próximos pasos recomendados:
 
-- Añadir módulos backend para recepción, captura o procesamiento de imagen.
+- Extraer el procesamiento de imagen a un servicio backend dedicado cuando crezca.
 - Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
 - Añadir pruebas backend con `pytest`.
-- Ampliar componentes Angular para visualizar resultados de visión.
+- Ampliar componentes Angular para visualizar más resultados de visión.
 - Preparar configuración diferenciada para desarrollo y producción.
 
 ## Consideraciones

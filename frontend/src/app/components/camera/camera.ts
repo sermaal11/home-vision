@@ -1,13 +1,16 @@
-import { Component, ElementRef, ViewChild, AfterViewInit} from "@angular/core";
+import { AfterViewInit, Component, ElementRef, signal, ViewChild } from "@angular/core";
+import { NgIf } from "@angular/common";
 import { ApiService } from "../../services/api.service";
 
 @Component({
 	selector: "app-camera",
 	templateUrl: "./camera.html",
 	standalone: true,
+	imports: [NgIf],
 })
 
 export class CameraComponent implements AfterViewInit {
+	
 	@ViewChild('videoElement')
 	videoElement!: ElementRef<HTMLVideoElement>;
 
@@ -15,6 +18,9 @@ export class CameraComponent implements AfterViewInit {
 	canvasElement!: ElementRef<HTMLCanvasElement>;
 
 	constructor(private apiService: ApiService) {}
+
+	processedFrameUrl = signal('');
+	private latestProcessedFrameUrl = '';
 
 	async ngAfterViewInit() {
 		try {
@@ -39,7 +45,12 @@ export class CameraComponent implements AfterViewInit {
 			if (!blob)
 				return;
 			const response = await this.apiService.sendFrame(blob);
-			console.log("Frame sent, response: ", response);
+			const nextFrameUrl = URL.createObjectURL(response);
+			if (this.latestProcessedFrameUrl) {
+				URL.revokeObjectURL(this.latestProcessedFrameUrl);
+			}
+			this.latestProcessedFrameUrl = nextFrameUrl;
+			this.processedFrameUrl.set(nextFrameUrl);
 		}, 'image/jpeg');
 	} 
 }
