@@ -18,7 +18,7 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 
 | Área | Tecnología |
 | --- | --- |
-| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, OpenCV, NumPy |
+| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV, NumPy |
 | Frontend | Angular 21, TypeScript, Tailwind CSS, Vitest |
 | Infraestructura | Docker, Docker Compose, Nginx |
 
@@ -31,6 +31,7 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── routes/
+│   │   │   ├── frame.py
 │   │   │   └── health.py
 │   │   └── services/
 │   │       └── system_service.py
@@ -60,10 +61,15 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 
 ## Funcionamiento actual
 
-El backend define una aplicación FastAPI en `backend/app/main.py` y expone el
-endpoint `GET /api/health`. La ruta delega en
-`backend/app/services/system_service.py`, que devuelve el estado básico del
-sistema:
+El backend define una aplicación FastAPI en `backend/app/main.py` y expone dos
+rutas bajo el prefijo `/api`:
+
+- `GET /api/health`: delega en `backend/app/services/system_service.py` y
+  devuelve el estado básico del sistema.
+- `POST /api/frame`: recibe un archivo multipart en el campo `frame`; se usa
+  para enviar capturas JPEG desde la cámara del navegador.
+
+Respuesta actual de `GET /api/health`:
 
 ```json
 {"status":"ok","message":"Home Vision Backend is running!"}
@@ -75,13 +81,16 @@ El frontend muestra el título `Home Vision`, consulta ese endpoint desde
 `frontend/src/app/components/camera/`.
 
 El componente `CameraComponent` usa `navigator.mediaDevices.getUserMedia` para
-pedir acceso a la cámara y mostrar el vídeo en un elemento `<video>`. Esta API
-requiere un contexto seguro en navegadores modernos, por eso Nginx se sirve por
-HTTPS local.
+pedir acceso a la cámara, mostrar el vídeo en un elemento `<video>`, capturar
+frames en un `<canvas>` oculto y enviarlos al backend como `multipart/form-data`
+al endpoint `/api/frame`. Esta API requiere un contexto seguro en navegadores
+modernos, por eso Nginx se sirve por HTTPS local.
 
-Cuando se accede por Nginx, el navegador llama a `/api/health` sobre el mismo
-origen (`https://localhost:8443` o `https://homelab:8443`) y Nginx reenvía esa
-petición al servicio backend.
+Cuando se accede por Nginx, el navegador llama a `/api/health` y `/api/frame`
+sobre el mismo origen (`https://localhost:8443` o `https://homelab:8443`) y
+Nginx reenvía esas peticiones al servicio backend. Como frontend y API se
+sirven desde el mismo origen público, el backend no necesita configurar CORS en
+este flujo.
 
 ## Ejecución local
 
@@ -106,6 +115,7 @@ npm start
 URLs principales:
 
 - Backend: `http://localhost:8000/api/health`
+- Recepción de frames: `http://localhost:8000/api/frame`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa `/api/health` como ruta relativa. En Docker funciona por
@@ -156,6 +166,7 @@ Estado auditado:
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
 - Endpoint de salud del backend disponible en `/api/health`.
+- Endpoint `/api/frame` disponible para recibir frames multipart en el campo `frame`.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - No existe todavía una suite de pruebas backend.
 
