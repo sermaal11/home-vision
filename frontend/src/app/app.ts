@@ -1,4 +1,5 @@
 import { Component, signal } from '@angular/core';
+import { ApiService } from './services/api.service';
 
 @Component({
   selector: 'app-root',
@@ -8,16 +9,13 @@ import { Component, signal } from '@angular/core';
 export class App {
   message = signal('Conectando con backend...');
 
-  constructor() {
+  constructor(private apiService: ApiService) {
     this.loadBackendMessage();
   }
 
   async loadBackendMessage() {
     try {
-      const apiBase =
-        window.location.port === '4200' ? `http://${window.location.hostname}:8000` : '';
-      const response = await fetch(`${apiBase}/api/health`);
-      const data = await response.json();
+      const data = await this.apiService.getHealth();
       console.log(data);
       this.message.set(data.message);
       console.log(this.message());
@@ -27,3 +25,4 @@ export class App {
     }
   }
 }
+
