@@ -14,4 +14,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando de arranque del backend
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--reload"]

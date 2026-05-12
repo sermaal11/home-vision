@@ -18,7 +18,7 @@ services:
       - ./backend:/app
     ports:
       - "8000:8000"
-    command: sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --reload"
+    command: sh -c "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --reload"
 
   nginx:
     image: nginx:latest
