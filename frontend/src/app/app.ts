@@ -14,7 +14,9 @@ export class App {
 
   async loadBackendMessage() {
     try {
-      const response = await fetch('http://localhost:8000/');
+      const apiBase =
+        window.location.port === '4200' ? `http://${window.location.hostname}:8000` : '';
+      const response = await fetch(`${apiBase}/api/health`);
       const data = await response.json();
       console.log(data);
       this.message.set(data.message);

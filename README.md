@@ -1,80 +1,73 @@
-# home-vision
+# Home Vision
 
-Aplicación inicial de visión doméstica con backend FastAPI y frontend Angular.
-El backend expone un endpoint de comprobación en `/`; el frontend es una app
-Angular limpia, sin plantilla visual ni assets por defecto.
+Home Vision es un proyecto académico orientado a explorar una arquitectura web
+para aplicaciones de visión doméstica. La implementación actual integra una API
+REST mínima con FastAPI, una interfaz Angular y una capa de orquestación con
+Docker Compose y Nginx.
 
-## Estado actual
+## Objetivos del proyecto
 
-- `backend/main.py` crea la instancia `FastAPI` y define `GET /`.
-- `backend/requirements.txt` fija FastAPI, Uvicorn, OpenCV, NumPy y Pydantic.
-- `frontend/` contiene una aplicación Angular 21 con Vitest y Tailwind CSS.
-- `frontend/src/app/` contiene el componente raíz que muestra el estado del backend.
-- `docker-compose.yml` levanta frontend, backend y Nginx para desarrollo con contenedores.
-- `.gitignore` excluye entornos virtuales, caches, `node_modules/`, `dist/` y cobertura.
+- Diseñar una base modular para una aplicación de visión por computador.
+- Separar responsabilidades entre backend, frontend y proxy HTTP.
+- Validar la comunicación entre Angular y FastAPI en entorno local.
+- Preparar el repositorio para incorporar procesamiento con OpenCV en fases posteriores.
 
-## Estructura
+## Tecnologías utilizadas
+
+| Área | Tecnología |
+| --- | --- |
+| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, OpenCV, NumPy |
+| Frontend | Angular 21, TypeScript, Tailwind CSS, Vitest |
+| Infraestructura | Docker, Docker Compose, Nginx |
+
+## Estructura del repositorio
 
 ```text
 .
-├── README.md
-├── docker-compose.yml
 ├── backend/
+│   ├── Dockerfile
+│   ├── app/
+│   │   └── routes/
+│   │       └── health.py
 │   ├── main.py
 │   └── requirements.txt
 ├── docker/
-│   └── nginx/
-│       └── default.conf
-└── frontend/
-    ├── angular.json
-    ├── package-lock.json
-    ├── package.json
-    ├── public/
-    └── src/
-        ├── app/
-        │   ├── app.config.ts
-        │   ├── app.css
-        │   ├── app.html
-        │   ├── app.spec.ts
-        │   └── app.ts
-        ├── index.html
-        ├── main.ts
-        └── styles.css
+│   └── nginx/default.conf
+├── frontend/
+│   ├── Dockerfile
+│   ├── angular.json
+│   ├── package.json
+│   └── src/app/
+├── docker-compose.yml
+└── README.md
 ```
 
-## Backend
+## Funcionamiento actual
 
-Preparar dependencias:
+El backend define una aplicación FastAPI en `backend/main.py` y expone el
+endpoint `GET /api/health`, que devuelve:
+
+```json
+{"status":"ok","message":"Backend is running!"}
+```
+
+El frontend muestra el título `Home Vision` y consulta ese endpoint mediante
+`/api/health` cuando está servido por Nginx. Si se ejecuta directamente con
+`ng serve` en el puerto `4200`, usa `http://<host>:8000/api/health`.
+
+## Ejecución local
+
+Backend:
 
 ```sh
 cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
-
-Ejecutar API:
-
-```sh
-cd backend
-source venv/bin/activate
 uvicorn main:app --reload
 ```
 
-Comprueba `http://localhost:8000/`. La respuesta esperada es:
-
-```json
-{"message":"Backend is running!"}
-```
-
-## Frontend
-
-La aplicación Angular fue generada con Angular CLI 21.2.10. Usa TypeScript,
-Vitest para pruebas unitarias y Tailwind CSS importado desde
-`frontend/src/styles.css`. La plantilla de bienvenida, el favicon y las
-dependencias no usadas del scaffold inicial fueron eliminadas.
-
-Instalar dependencias y arrancar el servidor de desarrollo:
+Frontend:
 
 ```sh
 cd frontend
@@ -82,20 +75,12 @@ npm install
 npm start
 ```
 
-La app se sirve en `http://localhost:4200/` y consume el backend en
-`http://localhost:8000/`.
+URLs principales:
 
-Comandos útiles:
+- Backend: `http://localhost:8000/api/health`
+- Frontend Angular: `http://localhost:4200/`
 
-```sh
-npm run build
-npm test
-```
-
-`npm run build` genera la build de producción. `npm test` ejecuta las pruebas
-unitarias configuradas por Angular/Vitest.
-
-## Docker
+## Ejecución con Docker
 
 Levantar todos los servicios:
 
@@ -103,29 +88,53 @@ Levantar todos los servicios:
 docker compose up
 ```
 
-Con Docker Compose, Nginx sirve el frontend en `http://localhost:8080/` y el
-backend queda expuesto directamente en `http://localhost:8000/`. El frontend
-usa esa URL del backend tanto desde `localhost:4200` como desde
-`localhost:8080`.
+Docker Compose construye y ejecuta tres servicios:
 
-Generar nuevos elementos con Angular CLI:
+- `backend`: API FastAPI expuesta en `http://localhost:8000/api/health`.
+- `frontend`: servidor de desarrollo Angular dentro del contenedor.
+- `nginx`: proxy disponible en `http://localhost:8080/`; reenvía `/api/` al backend.
+
+En una máquina de red local también puede accederse usando el nombre del host,
+por ejemplo `http://homelab:8080/` y `http://homelab:8080/api/health`.
+
+Si se modifica `docker/nginx/default.conf` con los contenedores ya levantados,
+recarga o reinicia Nginx para aplicar la nueva configuración:
+
+```sh
+docker compose restart nginx
+```
+
+## Pruebas y validación
+
+Frontend:
 
 ```sh
 cd frontend
-npm run ng -- generate component nombre-componente
+npm test -- --watch=false
+npm run build
 ```
 
-Mantén componentes, plantillas, estilos y pruebas agrupados por funcionalidad
-dentro de `frontend/src/app/`. Coloca assets públicos en `frontend/public/`.
+Estado auditado:
 
-## Pruebas
+- Build Angular correcta.
+- Suite frontend correcta: 1 archivo de pruebas, 4 tests.
+- Endpoint de salud del backend disponible en `/api/health`.
+- No existe todavía una suite de pruebas backend.
 
-El frontend ya incluye una prueba base en `frontend/src/app/app.spec.ts`. El
-backend aún no tiene suite de pruebas; cuando se añada, usa `pytest` en
-`backend/tests/`.
+## Estado y trabajo futuro
 
-## Contribución
+El proyecto se encuentra en una fase inicial. La integración base entre
+frontend y backend ya está validada, pero todavía falta implementar el dominio
+principal de visión doméstica. Próximos pasos recomendados:
 
-No subas secretos, archivos `.env`, entornos virtuales, dependencias instaladas
-ni artefactos generados. Documenta cualquier nuevo comando o requisito de
-configuración en este README.
+- Añadir módulos backend para captura o procesamiento de imagen.
+- Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
+- Añadir pruebas backend con `pytest`.
+- Definir componentes Angular específicos para visualizar resultados.
+- Preparar configuración diferenciada para desarrollo y producción.
+
+## Consideraciones
+
+No deben versionarse secretos, archivos `.env`, entornos virtuales,
+`node_modules/`, builds, caches ni resultados de cobertura. Las dependencias se
+reconstruyen desde `backend/requirements.txt` y `frontend/package-lock.json`.
