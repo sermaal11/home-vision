@@ -1,9 +1,9 @@
 # Home Vision
 
-Home Vision es un proyecto académico orientado a explorar una arquitectura web
-para aplicaciones de visión doméstica. La implementación actual integra una API
-REST mínima con FastAPI, una interfaz Angular y una capa de orquestación con
-Docker Compose y Nginx.
+Home Vision es un proyecto personal nacido de la motivación propia por
+aprender, experimentar y explorar conocimientos en arquitectura web y visión
+doméstica. La implementación actual integra una API REST mínima con FastAPI,
+una interfaz Angular y una capa de orquestación con Docker Compose y Nginx.
 
 ## Objetivos del proyecto
 
@@ -27,9 +27,11 @@ Docker Compose y Nginx.
 ├── backend/
 │   ├── Dockerfile
 │   ├── app/
-│   │   └── routes/
-│   │       └── health.py
-│   ├── main.py
+│   │   ├── main.py
+│   │   ├── routes/
+│   │   │   └── health.py
+│   │   └── services/
+│   │       └── system_service.py
 │   └── requirements.txt
 ├── docker/
 │   └── nginx/default.conf
@@ -38,22 +40,32 @@ Docker Compose y Nginx.
 │   ├── angular.json
 │   ├── package.json
 │   └── src/app/
+│       ├── config/api.config.ts
+│       ├── services/api.service.ts
+│       └── app.*
 ├── docker-compose.yml
+├── AGENTS.md
 └── README.md
 ```
 
 ## Funcionamiento actual
 
-El backend define una aplicación FastAPI en `backend/main.py` y expone el
-endpoint `GET /api/health`, que devuelve:
+El backend define una aplicación FastAPI en `backend/app/main.py` y expone el
+endpoint `GET /api/health`. La ruta delega en
+`backend/app/services/system_service.py`, que devuelve el estado básico del
+sistema:
 
 ```json
-{"status":"ok","message":"Backend is running!"}
+{"status":"ok","message":"Home Vision Backend is running!"}
 ```
 
-El frontend muestra el título `Home Vision` y consulta ese endpoint mediante
-`/api/health` cuando está servido por Nginx. Si se ejecuta directamente con
-`ng serve` en el puerto `4200`, usa `http://<host>:8000/api/health`.
+El frontend muestra el título `Home Vision` y consulta ese endpoint desde
+`ApiService`, usando la ruta compartida definida en
+`frontend/src/app/config/api.config.ts`.
+
+Cuando se accede por Nginx, el navegador llama a `/api/health` sobre el mismo
+origen (`http://localhost:8080` o `http://homelab:8080`) y Nginx reenvía esa
+petición al servicio backend.
 
 ## Ejecución local
 
@@ -64,7 +76,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 Frontend:
@@ -79,6 +91,10 @@ URLs principales:
 
 - Backend: `http://localhost:8000/api/health`
 - Frontend Angular: `http://localhost:4200/`
+
+Nota: el frontend usa `/api/health` como ruta relativa. En Docker funciona por
+Nginx. Si ejecutas Angular directamente en `4200`, asegúrate de servir o
+proxificar `/api/` hacia el backend.
 
 ## Ejecución con Docker
 
