@@ -24,9 +24,11 @@ services:
     image: nginx:latest
     container_name: home-vision-nginx
     ports:
-      - "8080:80"
+      - "8443:443"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/certs/nginx.crt:/etc/nginx/certs/nginx.crt
+      - ./docker/nginx/certs/nginx.key:/etc/nginx/certs/nginx.key
 
     depends_on:
       - frontend
