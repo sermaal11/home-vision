@@ -12,7 +12,8 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 - Separar responsabilidades entre backend, frontend y proxy HTTP.
 - Validar la comunicación entre Angular y FastAPI en entorno local.
 - Probar captura de vídeo desde el navegador como base para futuras funciones de visión.
-- Procesar frames en el backend con OpenCV y devolver una vista en escala de grises.
+- Procesar frames en el backend con OpenCV y devolver vistas en escala de grises
+  y con desenfoque.
 
 ## Tecnologías utilizadas
 
@@ -34,6 +35,7 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │   │   │   ├── frame.py
 │   │   │   └── health.py
 │   │   └── services/
+│   │       ├── frame_service.py
 │   │       └── system_service.py
 │   └── requirements.txt
 ├── docker/
@@ -61,8 +63,8 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 
 ## Funcionamiento actual
 
-El backend define una aplicación FastAPI en `backend/app/main.py` y expone dos
-rutas bajo el prefijo `/api`:
+El backend define una aplicación FastAPI en `backend/app/main.py` y expone
+varias rutas bajo el prefijo `/api`:
 
 - `GET /api/health`: delega en `backend/app/services/system_service.py` y
   devuelve el estado básico del sistema.
@@ -70,6 +72,8 @@ rutas bajo el prefijo `/api`:
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
 - `POST /api/frame/grayscale`: recibe el mismo formato de frame, lo transforma
   a escala de grises y devuelve un JPEG procesado.
+- `POST /api/frame/blur`: recibe el mismo formato de frame, lo transforma a
+  escala de grises, aplica un desenfoque gaussiano y devuelve un JPEG procesado.
 
 Respuesta actual de `GET /api/health`:
 
@@ -85,10 +89,11 @@ El frontend muestra el título `Home Vision`, consulta ese endpoint desde
 El componente `CameraComponent` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
-`multipart/form-data` al endpoint `/api/frame/grayscale`. La respuesta se
-consume como `Blob`, se convierte en una URL temporal y se muestra al lado del
-vídeo original como imagen procesada en escala de grises. Esta API requiere un
-contexto seguro en navegadores modernos, por eso Nginx se sirve por HTTPS local.
+`multipart/form-data` a los endpoints `/api/frame/grayscale` y
+`/api/frame/blur`. Las respuestas se consumen como `Blob`, se convierten en URLs
+temporales y se muestran junto al vídeo original como vistas procesadas en
+escala de grises y con desenfoque. Esta API requiere un contexto seguro en
+navegadores modernos, por eso Nginx se sirve por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
 `/api/frame...` sobre el mismo origen (`https://localhost:8443` o
@@ -121,6 +126,7 @@ URLs principales:
 - Backend: `http://localhost:8000/api/health`
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
+- Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -175,8 +181,10 @@ Estado auditado:
   `frame` y devolver un JPEG.
 - Endpoint `/api/frame/grayscale` disponible para devolver un JPEG procesado en
   escala de grises.
+- Endpoint `/api/frame/blur` disponible para devolver un JPEG procesado con
+  escala de grises y desenfoque gaussiano.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
-- Visualización lado a lado del vídeo original y la imagen procesada.
+- Visualización del vídeo original junto a las imágenes procesadas.
 - No existe todavía una suite de pruebas backend.
 
 ## Estado y trabajo futuro

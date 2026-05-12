@@ -39,4 +39,17 @@ export class ApiService {
 		}
 		return await response.blob();
 	}
+
+	async getBlurFrame(blob: Blob) {
+		const formData = new FormData();
+		formData.append("frame", blob, "frame.jpg");
+		const response = await fetch(API_CONFIG.blurFrame, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new Error(`Blur frame request failed: ${response.status}`);
+		}
+		return await response.blob();
+	}
 }
