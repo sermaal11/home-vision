@@ -13,7 +13,8 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 - Validar la comunicación entre Angular y FastAPI en entorno local.
 - Probar captura de vídeo desde el navegador como base para futuras funciones de visión.
 - Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
-  desenfoque, diferencia, umbralización y contornos.
+  desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
+  superposición sobre la imagen real.
 
 ## Tecnologías utilizadas
 
@@ -82,6 +83,13 @@ varias rutas bajo el prefijo `/api`:
 - `POST /api/frame/contours`: recibe un frame, lo transforma a escala de
   grises, aplica un umbral binario, detecta contornos externos y devuelve un
   JPEG con los contornos dibujados en verde.
+- `POST /api/frame/motion-boxes`: recibe un frame, lo transforma a escala de
+  grises, aplica un umbral binario, detecta contornos externos y devuelve un
+  JPEG con rectángulos verdes alrededor de las áreas de movimiento relevantes.
+- `POST /api/frame/motion-overlay`: recibe dos archivos multipart, `frame` con
+  la imagen real y `difference` con la diferencia entre frames; usa la
+  diferencia para detectar contornos y devuelve el frame real con rectángulos
+  rojos sobre las áreas de movimiento relevantes.
 
 Respuesta actual de `GET /api/health`:
 
@@ -99,13 +107,17 @@ pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
 `multipart/form-data` a los endpoints `/api/frame/grayscale`,
 `/api/frame/blur` y `/api/frame/difference`. La respuesta de diferencia se
-envía después a `/api/frame/threshold` y `/api/frame/contours` para calcular la
-vista umbralizada y la vista con contornos sobre esa misma diferencia. Las
-respuestas se consumen como `Blob`, se convierten en URLs temporales y se
-muestran junto al vídeo original como vistas procesadas en escala de grises, con
-desenfoque, con diferencia entre frames, con umbralización y con contornos. Esta
-API requiere un contexto seguro en navegadores modernos, por eso Nginx se sirve
-por HTTPS local.
+envía después a `/api/frame/threshold`, `/api/frame/contours` y
+`/api/frame/motion-boxes` para calcular la vista umbralizada, la vista con
+contornos y la vista con cajas de movimiento sobre esa misma diferencia. Para
+`/api/frame/motion-overlay`, envía el frame original en el campo `frame` y la
+diferencia en el campo `difference`, de modo que el backend dibuje las cajas
+sobre la imagen real. Las respuestas se consumen como `Blob`, se convierten en
+URLs temporales y se muestran junto al vídeo original como vistas procesadas en
+escala de grises, con desenfoque, con diferencia entre frames, con
+umbralización, con contornos, con cajas de movimiento y con overlay de
+movimiento. Esta API requiere un contexto seguro en navegadores modernos, por
+eso Nginx se sirve por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
 `/api/frame...` sobre el mismo origen (`https://localhost:8443` o
@@ -142,6 +154,8 @@ URLs principales:
 - Procesado de diferencia entre frames: `http://localhost:8000/api/frame/difference`
 - Procesado con umbral binario: `http://localhost:8000/api/frame/threshold`
 - Procesado con detección de contornos: `http://localhost:8000/api/frame/contours`
+- Procesado con cajas de movimiento: `http://localhost:8000/api/frame/motion-boxes`
+- Procesado con overlay de movimiento: `http://localhost:8000/api/frame/motion-overlay`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -204,6 +218,10 @@ Estado auditado:
   con umbral binario.
 - Endpoint `/api/frame/contours` disponible para devolver un JPEG procesado
   con contornos dibujados sobre la imagen umbralizada.
+- Endpoint `/api/frame/motion-boxes` disponible para devolver un JPEG procesado
+  con rectángulos verdes sobre las áreas de movimiento relevantes.
+- Endpoint `/api/frame/motion-overlay` disponible para devolver el frame real
+  con rectángulos rojos sobre las áreas de movimiento relevantes.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
 - No existe todavía una suite de pruebas backend.

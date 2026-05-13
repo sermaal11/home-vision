@@ -8,6 +8,8 @@ from app.services.frame_service import get_frame_difference
 from app.services.frame_service import threshold_frame
 from app.services.frame_service import find_motion_contours
 from app.services.frame_service import draw_contours
+from app.services.frame_service import draw_motion_boxes
+from app.services.frame_service import draw_motion_overlay
 
 router = APIRouter()
 
@@ -109,6 +111,56 @@ async def receive_contours_frame(frame: UploadFile = File(...)):
     contour_frame = draw_contours(thresholded_frame, contours)
     try:
         encoded_frame = encode_frame(contour_frame)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        ) from error
+    return Response(
+        encoded_frame,
+        media_type="image/jpeg"
+    )
+
+@router.post("/frame/motion-boxes")
+async def receive_motion_boxes_frame(frame: UploadFile = File(...)):
+    content = await frame.read()
+    decoded_frame = decode_frame(content)
+    if decoded_frame is None:
+        raise HTTPException(status_code=400, detail="Invalid image frame")
+    gray_frame = to_grayscale(decoded_frame)
+    thresholded_frame = threshold_frame(gray_frame)
+    contours = find_motion_contours(thresholded_frame)
+    contour_frame = draw_contours(thresholded_frame, contours)
+    draw_motion_boxes_frame = draw_motion_boxes(contour_frame, contours)
+    try:
+        encoded_frame = encode_frame(draw_motion_boxes_frame)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error)
+        ) from error
+    return Response(
+        encoded_frame,
+        media_type="image/jpeg"
+    )
+
+@router.post("/frame/motion-overlay")
+async def receive_motion_overlay_frame(
+    frame: UploadFile = File(...),
+    difference: UploadFile = File(...)
+):
+    content = await frame.read()
+    difference_content = await difference.read()
+    decoded_frame = decode_frame(content)
+    decoded_difference = decode_frame(difference_content)
+    if decoded_frame is None or decoded_difference is None:
+        raise HTTPException(status_code=400, detail="Invalid image frame")
+    gray_difference = to_grayscale(decoded_difference)
+    thresholded_frame = threshold_frame(gray_difference)
+    contours = find_motion_contours(thresholded_frame)
+    overlay_frame = draw_motion_overlay(decoded_frame, contours)
+    try:
+        encoded_frame = encode_frame(overlay_frame)
     except ValueError as error:
         raise HTTPException(
             status_code=500,

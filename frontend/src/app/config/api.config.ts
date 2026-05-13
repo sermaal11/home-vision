@@ -6,4 +6,6 @@ export const API_CONFIG = {
 	differenceFrame: '/api/frame/difference',
 	thresholdFrame: '/api/frame/threshold',
 	contoursFrame: '/api/frame/contours',
+	motionBoxesFrame: '/api/frame/motion-boxes',
+	motionOverlayFrame: '/api/frame/motion-overlay',
 };

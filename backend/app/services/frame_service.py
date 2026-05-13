@@ -49,7 +49,6 @@ def find_motion_contours(frame):
         cv2.RETR_EXTERNAL,
         cv2.CHAIN_APPROX_SIMPLE
     )
-
     return contours
 
 def draw_contours(frame, contours):
@@ -58,7 +57,6 @@ def draw_contours(frame, contours):
         frame,
         cv2.COLOR_GRAY2BGR
     )
-
     cv2.drawContours(
         contour_frame,
         contours,
@@ -66,5 +64,44 @@ def draw_contours(frame, contours):
         (0, 255, 0),
         2
     )
-
     return contour_frame
+
+def draw_motion_boxes(frame, contours):
+
+    if len(frame.shape) == 2:
+        motion_frame = cv2.cvtColor(
+            frame,
+            cv2.COLOR_GRAY2BGR
+        )
+    else:
+        motion_frame = frame.copy()
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area < 500:
+            continue
+        x, y, width, height = cv2.boundingRect(contour)
+        cv2.rectangle(
+            motion_frame,
+            (x, y),
+            (x + width, y + height),
+            (0, 0, 255),
+            2
+        )
+    return motion_frame
+
+def draw_motion_overlay(frame, contours):
+
+    overlay_frame = frame.copy()
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area < 500:
+            continue
+        x, y, width, height = cv2.boundingRect(contour)
+        cv2.rectangle(
+            overlay_frame,
+            (x, y),
+            (x + width, y + height),
+            (0, 0, 255),
+            2
+        )
+    return overlay_frame

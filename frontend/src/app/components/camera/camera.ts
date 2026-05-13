@@ -24,12 +24,16 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 	differenceFrameUrl = signal('');
 	thresholdFrameUrl = signal('');
 	contoursFrameUrl = signal('');
+	motionBoxesFrameUrl = signal('');
+	motionOverlayFrameUrl = signal('');
 
 	private latestGrayscaleFrameUrl = '';
 	private latestBlurFrameUrl = '';
 	private latestDifferenceFrameUrl = '';
 	private latestThresholdFrameUrl = '';
 	private latestContoursFrameUrl = '';
+	private latestMotionBoxesFrameUrl = '';
+	private latestMotionOverlayFrameUrl = '';
 	private captureIntervalId?: ReturnType<typeof setInterval>;
 	private isCapturingFrame = false;
 	private stream?: MediaStream;
@@ -74,15 +78,19 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 					this.apiService.getBlurFrame(blob),
 					this.apiService.getDifferenceFrame(blob),
 				]);
-				const [thresholdResponse, contoursResponse] = await Promise.all([
+				const [thresholdResponse, contoursResponse, motionBoxesResponse, motionOverlayResponse] = await Promise.all([
 					this.apiService.getThresholdFrame(differenceResponse),
 					this.apiService.getContoursFrame(differenceResponse),
+					this.apiService.getMotionBoxesFrame(differenceResponse),
+					this.apiService.getMotionOverlayFrame(blob, differenceResponse),
 				]);
 				const nextFrameUrl = URL.createObjectURL(response);
 				const nextBlurFrameUrl = URL.createObjectURL(blurResponse);
 				const nextDifferenceFrameUrl = URL.createObjectURL(differenceResponse);
 				const nextThresholdFrameUrl = URL.createObjectURL(thresholdResponse);
 				const nextContoursFrameUrl = URL.createObjectURL(contoursResponse);
+				const nextMotionBoxesFrameUrl = URL.createObjectURL(motionBoxesResponse);
+				const nextMotionOverlayFrameUrl = URL.createObjectURL(motionOverlayResponse);
 				if (this.latestGrayscaleFrameUrl) {
 					URL.revokeObjectURL(this.latestGrayscaleFrameUrl);
 				}
@@ -98,16 +106,26 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 				if (this.latestContoursFrameUrl) {
 					URL.revokeObjectURL(this.latestContoursFrameUrl);
 				}
+				if (this.latestMotionBoxesFrameUrl) {
+					URL.revokeObjectURL(this.latestMotionBoxesFrameUrl);
+				}
+				if (this.latestMotionOverlayFrameUrl) {
+					URL.revokeObjectURL(this.latestMotionOverlayFrameUrl);
+				}
 				this.latestGrayscaleFrameUrl = nextFrameUrl;
 				this.latestBlurFrameUrl = nextBlurFrameUrl;
 				this.latestDifferenceFrameUrl = nextDifferenceFrameUrl;
 				this.latestThresholdFrameUrl = nextThresholdFrameUrl;
 				this.latestContoursFrameUrl = nextContoursFrameUrl;
+				this.latestMotionBoxesFrameUrl = nextMotionBoxesFrameUrl;
+				this.latestMotionOverlayFrameUrl = nextMotionOverlayFrameUrl;
 				this.grayscaleFrameUrl.set(nextFrameUrl);
 				this.blurFrameUrl.set(nextBlurFrameUrl);
 				this.differenceFrameUrl.set(nextDifferenceFrameUrl);
 				this.thresholdFrameUrl.set(nextThresholdFrameUrl);
 				this.contoursFrameUrl.set(nextContoursFrameUrl);
+				this.motionBoxesFrameUrl.set(nextMotionBoxesFrameUrl);
+				this.motionOverlayFrameUrl.set(nextMotionOverlayFrameUrl);
 			} catch (error) {
 				console.error("Error processing camera frame: ", error);
 			} finally {
@@ -135,6 +153,12 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 		}
 		if (this.latestContoursFrameUrl) {
 			URL.revokeObjectURL(this.latestContoursFrameUrl);
+		}
+		if (this.latestMotionBoxesFrameUrl) {
+			URL.revokeObjectURL(this.latestMotionBoxesFrameUrl);
+		}
+		if (this.latestMotionOverlayFrameUrl) {
+			URL.revokeObjectURL(this.latestMotionOverlayFrameUrl);
 		}
 	}
 }

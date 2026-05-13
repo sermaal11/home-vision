@@ -89,6 +89,34 @@
 		/>
 	</div>
 
+	<div class="space-y-2">
+
+		<h2 class="text-sm font-medium text-zinc-300">
+			7. Motion Boxes
+		</h2>
+
+		<img
+			*ngIf="motionBoxesFrameUrl()"
+			[src]="motionBoxesFrameUrl()"
+			alt="Motion Boxes frame"
+			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
+		/>
+	</div>
+
+	<div class="space-y-2">
+
+		<h2 class="text-sm font-medium text-zinc-300">
+			8. Motion Overlay
+		</h2>
+
+		<img
+			*ngIf="motionOverlayFrameUrl()"
+			[src]="motionOverlayFrameUrl()"
+			alt="Motion Overlay frame"
+			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
+		/>
+	</div>
+
 	<canvas #canvasElement class="hidden">
 	</canvas>
 

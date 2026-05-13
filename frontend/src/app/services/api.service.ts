@@ -91,4 +91,31 @@ export class ApiService {
 		}
 		return await response.blob();
 	}
+
+	async getMotionBoxesFrame(blob: Blob) {
+		const formData = new FormData();
+		formData.append("frame", blob, "frame.jpg");
+		const response = await fetch(API_CONFIG.motionBoxesFrame, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new Error(`Motion boxes frame request failed: ${response.status}`);
+		}
+		return await response.blob();
+	}
+
+	async getMotionOverlayFrame(frame: Blob, difference: Blob) {
+		const formData = new FormData();
+		formData.append("frame", frame, "frame.jpg");
+		formData.append("difference", difference, "difference.jpg");
+		const response = await fetch(API_CONFIG.motionOverlayFrame, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new Error(`Motion overlay frame request failed: ${response.status}`);
+		}
+		return await response.blob();
+	}
 }
