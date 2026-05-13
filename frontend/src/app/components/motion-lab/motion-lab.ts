@@ -26,6 +26,7 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 	contoursFrameUrl = signal('');
 	motionBoxesFrameUrl = signal('');
 	motionOverlayFrameUrl = signal('');
+	faceDetectionFrameUrl = signal('');
 
 	private latestGrayscaleFrameUrl = '';
 	private latestBlurFrameUrl = '';
@@ -34,6 +35,7 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 	private latestContoursFrameUrl = '';
 	private latestMotionBoxesFrameUrl = '';
 	private latestMotionOverlayFrameUrl = '';
+	private latestFaceDetectionFrameUrl = '';
 	private captureIntervalId?: ReturnType<typeof setInterval>;
 	private isCapturingFrame = false;
 	private stream?: MediaStream;
@@ -84,6 +86,8 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 					this.apiService.getMotionBoxesFrame(differenceResponse),
 					this.apiService.getMotionOverlayFrame(blob, differenceResponse),
 				]);
+				const faceDetectionResponse = await this.apiService.detectFaces(blob);
+
 				const nextFrameUrl = URL.createObjectURL(response);
 				const nextBlurFrameUrl = URL.createObjectURL(blurResponse);
 				const nextDifferenceFrameUrl = URL.createObjectURL(differenceResponse);
@@ -91,6 +95,8 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 				const nextContoursFrameUrl = URL.createObjectURL(contoursResponse);
 				const nextMotionBoxesFrameUrl = URL.createObjectURL(motionBoxesResponse);
 				const nextMotionOverlayFrameUrl = URL.createObjectURL(motionOverlayResponse);
+				const nextFaceDetectionFrameUrl = URL.createObjectURL(faceDetectionResponse);
+
 				if (this.latestGrayscaleFrameUrl) {
 					URL.revokeObjectURL(this.latestGrayscaleFrameUrl);
 				}
@@ -112,6 +118,10 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 				if (this.latestMotionOverlayFrameUrl) {
 					URL.revokeObjectURL(this.latestMotionOverlayFrameUrl);
 				}
+				if (this.latestFaceDetectionFrameUrl) {
+					URL.revokeObjectURL(this.latestFaceDetectionFrameUrl);
+				}
+
 				this.latestGrayscaleFrameUrl = nextFrameUrl;
 				this.latestBlurFrameUrl = nextBlurFrameUrl;
 				this.latestDifferenceFrameUrl = nextDifferenceFrameUrl;
@@ -119,6 +129,7 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 				this.latestContoursFrameUrl = nextContoursFrameUrl;
 				this.latestMotionBoxesFrameUrl = nextMotionBoxesFrameUrl;
 				this.latestMotionOverlayFrameUrl = nextMotionOverlayFrameUrl;
+				this.latestFaceDetectionFrameUrl = nextFaceDetectionFrameUrl;
 				this.grayscaleFrameUrl.set(nextFrameUrl);
 				this.blurFrameUrl.set(nextBlurFrameUrl);
 				this.differenceFrameUrl.set(nextDifferenceFrameUrl);
@@ -126,6 +137,7 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 				this.contoursFrameUrl.set(nextContoursFrameUrl);
 				this.motionBoxesFrameUrl.set(nextMotionBoxesFrameUrl);
 				this.motionOverlayFrameUrl.set(nextMotionOverlayFrameUrl);
+				this.faceDetectionFrameUrl.set(nextFaceDetectionFrameUrl);
 			} catch (error) {
 				console.error("Error processing camera frame: ", error);
 			} finally {
@@ -159,6 +171,9 @@ export class MotionLabComponent implements AfterViewInit, OnDestroy {
 		}
 		if (this.latestMotionOverlayFrameUrl) {
 			URL.revokeObjectURL(this.latestMotionOverlayFrameUrl);
+		}
+		if (this.latestFaceDetectionFrameUrl) {
+			URL.revokeObjectURL(this.latestFaceDetectionFrameUrl);
 		}
 	}
 }

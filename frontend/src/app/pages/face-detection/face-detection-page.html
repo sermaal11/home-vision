@@ -1,4 +1,4 @@
-<section class="space-y-6">
+<section class="space-y-8">
 
 	<div class="space-y-2">
 
@@ -11,44 +11,104 @@
 		</h2>
 
 		<p class="max-w-3xl text-sm leading-6 text-zinc-400">
-			Página preparada para incorporar detección de rostros desde la cámara y
-			conectar el flujo con nuevos endpoints de visión por computador.
+			Captura frames desde la cámara y compara el frame original con el resultado
+			procesado por MediaPipe.
 		</p>
 
 	</div>
 
-	<div class="grid gap-4 md:grid-cols-3">
+	<section class="space-y-4">
+
+		<div class="space-y-1">
+			<h3 class="text-xl font-semibold text-white">
+				Facebox
+			</h3>
+			<p class="text-sm leading-6 text-zinc-400">
+				Comparación en vivo entre el frame capturado y la detección facial con
+				caja dibujada.
+			</p>
+		</div>
+
+		<p
+			*ngIf="cameraError()"
+			class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+			{{ cameraError() }}
+		</p>
+
+		<div class="grid gap-4 md:grid-cols-2">
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Original
+				</h4>
+				<div class="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="originalFrameUrl(); else originalPlaceholder"
+						[src]="originalFrameUrl()"
+						alt="Frame original capturado por la cámara"
+						class="aspect-video w-full object-cover"
+					/>
+					<ng-template #originalPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando cámara
+						</div>
+					</ng-template>
+				</div>
+			</div>
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Box
+				</h4>
+				<div class="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="faceBoxFrameUrl(); else faceBoxPlaceholder"
+						[src]="faceBoxFrameUrl()"
+						alt="Frame con caja de detección facial"
+						class="aspect-video w-full object-cover"
+					/>
+					<ng-template #faceBoxPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando detección
+						</div>
+					</ng-template>
+				</div>
+			</div>
+
+		</div>
+
+		<video
+			#videoElement
+			autoplay
+			playsinline
+			muted
+			class="hidden">
+		</video>
+
+		<canvas #canvasElement class="hidden">
+		</canvas>
+
+	</section>
+
+	<section class="space-y-4 border-t border-zinc-800 pt-8">
+
+		<div class="space-y-1">
+			<h3 class="text-xl font-semibold text-white">
+				Face Mesh
+			</h3>
+			<p class="max-w-3xl text-sm leading-6 text-zinc-400">
+				Espacio reservado para añadir landmarks y malla facial cuando el endpoint
+				de MediaPipe Face Mesh esté conectado.
+			</p>
+		</div>
 
 		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<h3 class="text-sm font-semibold text-white">
-				Cámara
-			</h3>
-			<p class="mt-2 text-sm leading-6 text-zinc-400">
-				El punto de partida será la captura segura desde el navegador, igual que
-				en Motion Lab.
+			<p class="text-sm leading-6 text-zinc-400">
+				La sección queda lista para mostrar la imagen original junto a una versión
+				con puntos faciales cuando se implemente el procesamiento de malla.
 			</p>
 		</article>
 
-		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<h3 class="text-sm font-semibold text-white">
-				Rostros
-			</h3>
-			<p class="mt-2 text-sm leading-6 text-zinc-400">
-				La vista podrá mostrar cajas, confianza y estados de detección sobre el
-				frame original.
-			</p>
-		</article>
-
-		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<h3 class="text-sm font-semibold text-white">
-				Próximo paso
-			</h3>
-			<p class="mt-2 text-sm leading-6 text-zinc-400">
-				Crear el endpoint backend y un componente reutilizable para procesar cada
-				frame en tiempo real.
-			</p>
-		</article>
-
-	</div>
+	</section>
 
 </section>

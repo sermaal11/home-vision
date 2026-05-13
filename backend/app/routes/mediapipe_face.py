@@ -1,6 +1,13 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from app.services.frame_service import decode_frame
-from app.services.mediapipe_face_service import detect_faces, has_faces
+from fastapi.responses import Response
+from app.services.frame_service import (
+    decode_frame,
+    encode_frame
+)
+from app.services.mediapipe_face_service import (
+    detect_faces,
+    draw_face_boxes
+)
 
 router = APIRouter()
 
@@ -13,7 +20,13 @@ async def mediapipe_face(frame: UploadFile = File(...)):
             status_code=400,
             detail="Invalid image frame"
         )
-    result = detect_faces(decoded_frame)
-    return {
-        "face_detected": has_faces(result)
-    }
+    results = detect_faces(decoded_frame)
+    face_frame = draw_face_boxes(
+        decoded_frame,
+        results
+    )
+    encoded_frame = encode_frame(face_frame)
+    return Response(
+        encoded_frame,
+        media_type="image/jpeg"
+    )

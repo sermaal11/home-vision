@@ -145,6 +145,6 @@ export class ApiService {
 		if (!response.ok) {
 			throw new Error(`Mediapipe face detection request failed: ${response.status}`);
 		}
-		return await response.json();
+		return await response.blob();
 	}
 }
