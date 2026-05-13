@@ -21,7 +21,7 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 | Área | Tecnología |
 | --- | --- |
 | Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV headless, NumPy |
-| Frontend | Angular 21, TypeScript, Tailwind CSS, Vitest |
+| Frontend | Angular 21, Angular Router, TypeScript, Tailwind CSS, Vitest |
 | Infraestructura | Docker, Docker Compose, Nginx |
 
 ## Estructura del repositorio
@@ -50,11 +50,19 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │   ├── angular.json
 │   ├── package.json
 │   └── src/app/
+│       ├── app.routes.ts
 │       ├── components/
 │       │   └── camera/
 │       │       ├── camera.html
 │       │       └── camera.ts
 │       ├── config/api.config.ts
+│       ├── pages/
+│       │   ├── camera-page/
+│       │   │   ├── camera-page.html
+│       │   │   └── camera-page.ts
+│       │   └── home/
+│       │       ├── home.html
+│       │       └── home.ts
 │       ├── services/api.service.ts
 │       └── app.*
 ├── docker-compose.yml
@@ -97,10 +105,17 @@ Respuesta actual de `GET /api/health`:
 {"status":"ok","message":"Home Vision Backend is running!"}
 ```
 
-El frontend muestra el título `Home Vision`, consulta ese endpoint desde
-`ApiService` usando la ruta compartida definida en
-`frontend/src/app/config/api.config.ts`, y renderiza un componente de cámara en
-`frontend/src/app/components/camera/`.
+El frontend usa Angular Router con rutas definidas en
+`frontend/src/app/app.routes.ts`. La ruta `/` muestra una página de bienvenida
+con una versión condensada del propósito, arquitectura y flujo del proyecto. La
+ruta `/vision` muestra la página de cámara, que reutiliza el componente de
+cámara ubicado en `frontend/src/app/components/camera/`. El layout global en
+`frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
+estado del backend.
+
+La aplicación consulta `GET /api/health` desde `ApiService` usando la ruta
+compartida definida en `frontend/src/app/config/api.config.ts` y muestra el
+mensaje recibido en el encabezado global.
 
 El componente `CameraComponent` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
@@ -148,6 +163,8 @@ npm start
 URLs principales:
 
 - Backend: `http://localhost:8000/api/health`
+- Home frontend: `http://localhost:4200/`
+- Página de visión: `http://localhost:4200/vision`
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
 - Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
@@ -205,6 +222,7 @@ Estado auditado:
 
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
+- Routing frontend disponible con las páginas `/` y `/vision`.
 - Endpoint de salud del backend disponible en `/api/health`.
 - Endpoint `/api/frame` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.

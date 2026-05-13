@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ApiService } from './services/api.service';
-import { CameraComponent } from './components/camera/camera';
 
 @Component({
   selector: 'app-root',
-  imports: [CameraComponent],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './app.html',
 })
 export class App {
