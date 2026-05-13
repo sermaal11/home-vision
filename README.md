@@ -52,14 +52,14 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │   └── src/app/
 │       ├── app.routes.ts
 │       ├── components/
-│       │   └── camera/
-│       │       ├── camera.html
-│       │       └── camera.ts
+│       │   └── motion-lab/
+│       │       ├── motion-lab.html
+│       │       └── motion-lab.ts
 │       ├── config/api.config.ts
 │       ├── pages/
-│       │   ├── camera-page/
-│       │   │   ├── camera-page.html
-│       │   │   └── camera-page.ts
+│       │   ├── motion-lab/
+│       │   │   ├── motion-lab-page.html
+│       │   │   └── motion-lab-page.ts
 │       │   └── home/
 │       │       ├── home.html
 │       │       └── home.ts
@@ -108,8 +108,9 @@ Respuesta actual de `GET /api/health`:
 El frontend usa Angular Router con rutas definidas en
 `frontend/src/app/app.routes.ts`. La ruta `/` muestra una página de bienvenida
 con una versión condensada del propósito, arquitectura y flujo del proyecto. La
-ruta `/vision` muestra la página de cámara, que reutiliza el componente de
-cámara ubicado en `frontend/src/app/components/camera/`. El layout global en
+ruta `/motion-lab` muestra el laboratorio visual de detección de movimiento,
+que reutiliza el componente de cámara ubicado en
+`frontend/src/app/components/motion-lab/`. El layout global en
 `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
 estado del backend.
 
@@ -117,7 +118,7 @@ La aplicación consulta `GET /api/health` desde `ApiService` usando la ruta
 compartida definida en `frontend/src/app/config/api.config.ts` y muestra el
 mensaje recibido en el encabezado global.
 
-El componente `CameraComponent` usa `navigator.mediaDevices.getUserMedia` para
+El componente `MotionLabComponent` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
 `multipart/form-data` a los endpoints `/api/frame/grayscale`,
@@ -164,7 +165,7 @@ URLs principales:
 
 - Backend: `http://localhost:8000/api/health`
 - Home frontend: `http://localhost:4200/`
-- Página de visión: `http://localhost:4200/vision`
+- Motion Lab frontend: `http://localhost:4200/motion-lab`
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
 - Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
@@ -222,7 +223,7 @@ Estado auditado:
 
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
-- Routing frontend disponible con las páginas `/` y `/vision`.
+- Routing frontend disponible con las páginas `/` y `/motion-lab`.
 - Endpoint de salud del backend disponible en `/api/health`.
 - Endpoint `/api/frame` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.

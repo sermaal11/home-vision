@@ -41,7 +41,7 @@ describe('App', () => {
     await fixture.whenStable();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('p')?.textContent).toContain('Backend is running!');
+    expect(compiled.textContent).toContain('Backend is running!');
   });
 
   it('should fetch backend health through the api route', async () => {

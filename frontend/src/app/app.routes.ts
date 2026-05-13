@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { CameraPage } from './pages/camera-page/camera-page';
 import { HomePage } from './pages/home/home';
+import { MotionLabPage } from './pages/motion-lab/motion-lab-page';
 
 export const routes: Routes = [
   {
@@ -9,9 +9,9 @@ export const routes: Routes = [
     title: 'Home Vision',
   },
   {
-    path: 'vision',
-    component: CameraPage,
-    title: 'Home Vision | Vision',
+    path: 'motion-lab',
+    component: MotionLabPage,
+    title: 'Home Vision | Motion Lab',
   },
   {
     path: '**',
