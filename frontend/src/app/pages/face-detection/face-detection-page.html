@@ -21,7 +21,7 @@
 
 		<div class="space-y-1">
 			<h3 class="text-xl font-semibold text-white">
-				Facebox
+				Face Box
 			</h3>
 			<p class="text-sm leading-6 text-zinc-400">
 				Comparación en vivo entre el frame capturado y la detección facial con
@@ -41,18 +41,24 @@
 				<h4 class="text-sm font-medium text-zinc-300">
 					Original
 				</h4>
-				<div class="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
 					<img
 						*ngIf="originalFrameUrl(); else originalPlaceholder"
 						[src]="originalFrameUrl()"
 						alt="Frame original capturado por la cámara"
-						class="aspect-video w-full object-cover"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
 					/>
 					<ng-template #originalPlaceholder>
 						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
 							Esperando cámara
 						</div>
 					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Frame real capturado por la cámara. Es la referencia que se envía a
+							MediaPipe para calcular la caja facial.
+						</p>
+					</div>
 				</div>
 			</div>
 
@@ -60,18 +66,24 @@
 				<h4 class="text-sm font-medium text-zinc-300">
 					Box
 				</h4>
-				<div class="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
 					<img
 						*ngIf="faceBoxFrameUrl(); else faceBoxPlaceholder"
 						[src]="faceBoxFrameUrl()"
 						alt="Frame con caja de detección facial"
-						class="aspect-video w-full object-cover"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
 					/>
 					<ng-template #faceBoxPlaceholder>
 						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
 							Esperando detección
 						</div>
 					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							MediaPipe detecta el rostro y el backend dibuja un rectángulo sobre
+							la zona encontrada, junto con la confianza de la detección.
+						</p>
+					</div>
 				</div>
 			</div>
 
@@ -97,17 +109,64 @@
 				Face Mesh
 			</h3>
 			<p class="max-w-3xl text-sm leading-6 text-zinc-400">
-				Espacio reservado para añadir landmarks y malla facial cuando el endpoint
-				de MediaPipe Face Mesh esté conectado.
+				Comparación en vivo entre el frame capturado y la malla facial de
+				MediaPipe dibujada sobre el rostro.
 			</p>
 		</div>
 
-		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<p class="text-sm leading-6 text-zinc-400">
-				La sección queda lista para mostrar la imagen original junto a una versión
-				con puntos faciales cuando se implemente el procesamiento de malla.
-			</p>
-		</article>
+		<div class="grid gap-4 md:grid-cols-2">
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Original
+				</h4>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="originalFrameUrl(); else meshOriginalPlaceholder"
+						[src]="originalFrameUrl()"
+						alt="Frame original capturado por la cámara para Face Mesh"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #meshOriginalPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando cámara
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Mismo frame original, usado ahora como entrada para calcular puntos
+							faciales y conexiones de la malla.
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Mesh
+				</h4>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="faceMeshFrameUrl(); else faceMeshPlaceholder"
+						[src]="faceMeshFrameUrl()"
+						alt="Frame con malla facial de MediaPipe"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #faceMeshPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando malla
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Face Mesh dibuja landmarks y conexiones sobre el rostro para
+							representar su geometría con más detalle que una caja.
+						</p>
+					</div>
+				</div>
+			</div>
+
+		</div>
 
 	</section>
 

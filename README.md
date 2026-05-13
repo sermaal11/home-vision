@@ -16,9 +16,9 @@ Nginx sobre HTTPS local.
 - Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
   desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
   superposición sobre la imagen real.
-- Exponer una primera visualización de detección facial con MediaPipe, dibujar
-  cajas sobre rostros detectados y validar su carga desde endpoints de salud del
-  backend.
+- Exponer visualizaciones de detección facial con MediaPipe, dibujar cajas y
+  mallas faciales sobre rostros detectados, y validar su carga desde endpoints
+  de salud del backend.
 
 ## Tecnologías utilizadas
 
@@ -93,6 +93,9 @@ varias rutas bajo el prefijo `/api`:
 - `POST /api/mediapipe/face`: recibe un archivo multipart en el campo `frame`,
   ejecuta el detector facial de MediaPipe y devuelve un JPEG con la caja facial
   dibujada cuando se detecta un rostro.
+- `POST /api/mediapipe/face-mesh`: recibe un archivo multipart en el campo
+  `frame`, ejecuta Face Mesh de MediaPipe y devuelve un JPEG con la malla facial
+  dibujada cuando se detectan landmarks.
 - `POST /api/frame`: recibe un archivo multipart en el campo `frame`, decodifica
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
 - `POST /api/frame/grayscale`: recibe el mismo formato de frame, lo transforma
@@ -138,12 +141,12 @@ además de un panel pequeño de salud que consulta `/api/health`,
 `/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-lab` muestra el
 laboratorio visual de detección de movimiento, que reutiliza el componente de
 cámara ubicado en `frontend/src/app/components/motion-lab/`. La ruta
-`/face-detection` muestra la sección Facebox, que captura frames desde la cámara
-y enseña el original junto al JPEG devuelto por `/api/mediapipe/face` con la
-caja facial dibujada. Debajo incluye la sección Face Mesh como espacio
-preparado para una futura visualización de landmarks faciales. El layout global
-en `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y
-el estado del backend.
+`/face-detection` muestra las secciones Face Box y Face Mesh. Ambas capturan
+frames desde la cámara y enseñan el original junto al JPEG procesado por
+MediaPipe: `/api/mediapipe/face` dibuja cajas faciales y
+`/api/mediapipe/face-mesh` dibuja la malla de landmarks. El layout global en
+`frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
+estado del backend.
 
 La aplicación consulta los endpoints de salud desde `ApiService` usando las
 rutas compartidas definidas en `frontend/src/app/config/api.config.ts`. El
@@ -210,6 +213,7 @@ URLs principales:
 - Procesado con cajas de movimiento: `http://localhost:8000/api/frame/motion-boxes`
 - Procesado con overlay de movimiento: `http://localhost:8000/api/frame/motion-overlay`
 - Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face`
+- Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -269,6 +273,13 @@ curl http://localhost:8000/api/health/mediapipe
 curl -k https://localhost:8443/api/health
 ```
 
+Para probar los endpoints de MediaPipe con una imagen local:
+
+```sh
+curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face
+curl -o face-mesh.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-mesh
+```
+
 ## Pruebas y validación
 
 Frontend:
@@ -290,6 +301,8 @@ Estado auditado:
 - Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
 - Endpoint de detección facial disponible en `/api/mediapipe/face` y devuelve
   un JPEG con cajas faciales.
+- Endpoint de malla facial disponible en `/api/mediapipe/face-mesh` y devuelve
+  un JPEG con landmarks faciales.
 - Endpoint `/api/frame` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.
 - Endpoint `/api/frame/grayscale` disponible para devolver un JPEG procesado en
@@ -308,8 +321,7 @@ Estado auditado:
   con rectángulos rojos sobre las áreas de movimiento relevantes.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
-- Página `/face-detection` disponible con sección Facebox en vivo y apartado
-  Face Mesh preparado.
+- Página `/face-detection` disponible con secciones Face Box y Face Mesh en vivo.
 - Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
 
@@ -322,7 +334,8 @@ principal de visión doméstica. Próximos pasos recomendados:
 - Extraer el procesamiento de imagen a un servicio backend dedicado cuando crezca.
 - Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
 - Añadir pruebas backend con `pytest`.
-- Implementar el endpoint y la visualización de Face Mesh.
+- Añadir controles de pausa, frecuencia de captura y selección de vista para
+  Face Detection.
 - Ampliar componentes Angular para visualizar más resultados de visión.
 - Preparar configuración diferenciada para desarrollo y producción.
 

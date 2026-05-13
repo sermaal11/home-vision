@@ -17,10 +17,12 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
 
   originalFrameUrl = signal('');
   faceBoxFrameUrl = signal('');
+  faceMeshFrameUrl = signal('');
   cameraError = signal('');
 
   private latestOriginalFrameUrl = '';
   private latestFaceBoxFrameUrl = '';
+  private latestFaceMeshFrameUrl = '';
   private captureIntervalId?: ReturnType<typeof setInterval>;
   private isCapturingFrame = false;
   private stream?: MediaStream;
@@ -67,21 +69,30 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         return;
       }
       try {
-        const faceBoxFrame = await this.apiService.detectFaces(blob);
+        const [faceBoxFrame, faceMeshFrame] = await Promise.all([
+          this.apiService.detectFaces(blob),
+          this.apiService.detectFaceMesh(blob),
+        ]);
         const nextOriginalFrameUrl = URL.createObjectURL(blob);
         const nextFaceBoxFrameUrl = URL.createObjectURL(faceBoxFrame);
+        const nextFaceMeshFrameUrl = URL.createObjectURL(faceMeshFrame);
         if (this.latestOriginalFrameUrl) {
           URL.revokeObjectURL(this.latestOriginalFrameUrl);
         }
         if (this.latestFaceBoxFrameUrl) {
           URL.revokeObjectURL(this.latestFaceBoxFrameUrl);
         }
+        if (this.latestFaceMeshFrameUrl) {
+          URL.revokeObjectURL(this.latestFaceMeshFrameUrl);
+        }
         this.latestOriginalFrameUrl = nextOriginalFrameUrl;
         this.latestFaceBoxFrameUrl = nextFaceBoxFrameUrl;
+        this.latestFaceMeshFrameUrl = nextFaceMeshFrameUrl;
         this.originalFrameUrl.set(nextOriginalFrameUrl);
         this.faceBoxFrameUrl.set(nextFaceBoxFrameUrl);
+        this.faceMeshFrameUrl.set(nextFaceMeshFrameUrl);
       } catch (error) {
-        console.error('Error detecting faces: ', error);
+        console.error('Error processing face detection frame: ', error);
       } finally {
         this.isCapturingFrame = false;
       }
@@ -98,6 +109,9 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
     }
     if (this.latestFaceBoxFrameUrl) {
       URL.revokeObjectURL(this.latestFaceBoxFrameUrl);
+    }
+    if (this.latestFaceMeshFrameUrl) {
+      URL.revokeObjectURL(this.latestFaceMeshFrameUrl);
     }
   }
 }

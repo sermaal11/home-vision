@@ -8,6 +8,19 @@ face_detection = mp_face_detection.FaceDetection(
 	min_detection_confidence=0.5
 )
 
+mp_face_mesh = mp.solutions.face_mesh
+
+face_mesh = mp_face_mesh.FaceMesh(
+    static_image_mode=False,
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+)
+
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
+
 def mediapipe_status():
     return {
         "mediapipe_loaded": face_detection is not None
@@ -19,6 +32,7 @@ def has_faces(result):
 def detect_faces(frame):
 	rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 	return face_detection.process(rgb_frame)
+
 
 def draw_face_boxes(frame, results):
     if not results.detections:
@@ -47,5 +61,23 @@ def draw_face_boxes(frame, results):
             0.6,
             (0, 0, 255),
             2
+        )
+    return frame
+
+def detect_face_mesh(frame):
+    rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+    return face_mesh.process(rgb_frame)
+
+def draw_face_mesh(frame, results):
+    if not results.multi_face_landmarks:
+        return frame
+    for face_landmarks in results.multi_face_landmarks:
+        mp_drawing.draw_landmarks(
+            image=frame,
+            landmark_list=face_landmarks,
+            connections=mp.solutions.face_mesh.FACEMESH_TESSELATION,
+            landmark_drawing_spec=None,
+            connection_drawing_spec=mp_drawing_styles
+                .get_default_face_mesh_tesselation_style()
         )
     return frame
