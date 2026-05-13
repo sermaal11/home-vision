@@ -3,4 +3,6 @@ export const API_CONFIG = {
 	frame: '/api/frame',
 	grayscaleFrame: '/api/frame/grayscale',
 	blurFrame: '/api/frame/blur',
+	differenceFrame: '/api/frame/difference',
+	thresholdFrame: '/api/frame/threshold'
 };

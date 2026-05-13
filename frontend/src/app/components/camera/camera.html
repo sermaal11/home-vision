@@ -3,7 +3,7 @@
 	<div class="space-y-2">
 
 		<h2 class="text-sm font-medium text-zinc-300">
-			Original
+			1. Original
 		</h2>
 
 		<video
@@ -19,7 +19,7 @@
 	<div class="space-y-2">
 
 		<h2 class="text-sm font-medium text-zinc-300">
-			Escala de grises
+			2. Greyscale
 		</h2>
 
 		<img
@@ -34,7 +34,7 @@
 	<div class="space-y-2">
 
 		<h2 class="text-sm font-medium text-zinc-300">
-			Desenfoque
+			3. Blur
 		</h2>
 
 		<img
@@ -44,6 +44,35 @@
 			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
 		/>
 
+	</div>
+
+	<div class="space-y-2">
+
+		<h2 class="text-sm font-medium text-zinc-300">
+			4. Difference
+		</h2>
+
+		<img
+			*ngIf="differenceFrameUrl()"
+			[src]="differenceFrameUrl()"
+			alt="Difference frame"
+			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
+		/>
+
+	</div>
+
+	<div class="space-y-2">
+
+		<h2 class="text-sm font-medium text-zinc-300">
+			5. Thresholding
+		</h2>
+
+		<img
+			*ngIf="thresholdFrameUrl()"
+			[src]="thresholdFrameUrl()"
+			alt="Threshold frame"
+			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
+		/>
 	</div>
 
 	<canvas #canvasElement class="hidden">

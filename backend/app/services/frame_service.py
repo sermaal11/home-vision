@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 
+previous_frame = None
 
 def decode_frame(content: bytes):
     np_array = np.frombuffer(content, np.uint8)
@@ -20,3 +21,23 @@ def encode_frame(frame):
 
 def blur_frame(frame):
     return cv2.GaussianBlur(frame, (21, 21), 0)
+
+
+def get_frame_difference(frame):
+    global previous_frame
+    if previous_frame is None:
+        previous_frame = frame
+        return frame
+    difference = cv2.absdiff(previous_frame, frame)
+    previous_frame = frame
+    return difference
+
+
+def threshold_frame(frame):
+    _, threshold = cv2.threshold(
+        frame,
+        25,
+        255,
+        cv2.THRESH_BINARY
+    )
+    return threshold
