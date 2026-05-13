@@ -10,4 +10,5 @@ export const API_CONFIG = {
 	contoursFrame: '/api/frame/contours',
 	motionBoxesFrame: '/api/frame/motion-boxes',
 	motionOverlayFrame: '/api/frame/motion-overlay',
+	mediapipeFace: '/api/mediapipe/face',
 };
