@@ -75,6 +75,20 @@
 		/>
 	</div>
 
+	<div class="space-y-2">
+
+		<h2 class="text-sm font-medium text-zinc-300">
+			6. Contours
+		</h2>
+
+		<img
+			*ngIf="contoursFrameUrl()"
+			[src]="contoursFrameUrl()"
+			alt="Contours frame"
+			class="aspect-video w-full rounded-lg border border-zinc-700 object-cover"
+		/>
+	</div>
+
 	<canvas #canvasElement class="hidden">
 	</canvas>
 

@@ -23,11 +23,13 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 	blurFrameUrl = signal('');
 	differenceFrameUrl = signal('');
 	thresholdFrameUrl = signal('');
+	contoursFrameUrl = signal('');
 
 	private latestGrayscaleFrameUrl = '';
 	private latestBlurFrameUrl = '';
 	private latestDifferenceFrameUrl = '';
 	private latestThresholdFrameUrl = '';
+	private latestContoursFrameUrl = '';
 	private captureIntervalId?: ReturnType<typeof setInterval>;
 	private isCapturingFrame = false;
 	private stream?: MediaStream;
@@ -70,13 +72,17 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 				const [response, blurResponse, differenceResponse] = await Promise.all([
 					this.apiService.getGrayscaleFrame(blob),
 					this.apiService.getBlurFrame(blob),
-					this.apiService.getDifferenceFrame(blob)
+					this.apiService.getDifferenceFrame(blob),
 				]);
-				const thresholdResponse = await this.apiService.getThresholdFrame(differenceResponse);
+				const [thresholdResponse, contoursResponse] = await Promise.all([
+					this.apiService.getThresholdFrame(differenceResponse),
+					this.apiService.getContoursFrame(differenceResponse),
+				]);
 				const nextFrameUrl = URL.createObjectURL(response);
 				const nextBlurFrameUrl = URL.createObjectURL(blurResponse);
 				const nextDifferenceFrameUrl = URL.createObjectURL(differenceResponse);
 				const nextThresholdFrameUrl = URL.createObjectURL(thresholdResponse);
+				const nextContoursFrameUrl = URL.createObjectURL(contoursResponse);
 				if (this.latestGrayscaleFrameUrl) {
 					URL.revokeObjectURL(this.latestGrayscaleFrameUrl);
 				}
@@ -89,14 +95,19 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 				if (this.latestThresholdFrameUrl) {
 					URL.revokeObjectURL(this.latestThresholdFrameUrl);
 				}
+				if (this.latestContoursFrameUrl) {
+					URL.revokeObjectURL(this.latestContoursFrameUrl);
+				}
 				this.latestGrayscaleFrameUrl = nextFrameUrl;
 				this.latestBlurFrameUrl = nextBlurFrameUrl;
 				this.latestDifferenceFrameUrl = nextDifferenceFrameUrl;
 				this.latestThresholdFrameUrl = nextThresholdFrameUrl;
+				this.latestContoursFrameUrl = nextContoursFrameUrl;
 				this.grayscaleFrameUrl.set(nextFrameUrl);
 				this.blurFrameUrl.set(nextBlurFrameUrl);
 				this.differenceFrameUrl.set(nextDifferenceFrameUrl);
 				this.thresholdFrameUrl.set(nextThresholdFrameUrl);
+				this.contoursFrameUrl.set(nextContoursFrameUrl);
 			} catch (error) {
 				console.error("Error processing camera frame: ", error);
 			} finally {
@@ -121,6 +132,9 @@ export class CameraComponent implements AfterViewInit, OnDestroy {
 		}
 		if (this.latestThresholdFrameUrl) {
 			URL.revokeObjectURL(this.latestThresholdFrameUrl);
+		}
+		if (this.latestContoursFrameUrl) {
+			URL.revokeObjectURL(this.latestContoursFrameUrl);
 		}
 	}
 }

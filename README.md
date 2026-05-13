@@ -13,7 +13,7 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 - Validar la comunicación entre Angular y FastAPI en entorno local.
 - Probar captura de vídeo desde el navegador como base para futuras funciones de visión.
 - Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
-  desenfoque, diferencia y umbralización.
+  desenfoque, diferencia, umbralización y contornos.
 
 ## Tecnologías utilizadas
 
@@ -79,6 +79,9 @@ varias rutas bajo el prefijo `/api`:
   respecto al frame anterior procesado.
 - `POST /api/frame/threshold`: recibe un frame, lo transforma a escala de
   grises, aplica un umbral binario y devuelve un JPEG procesado.
+- `POST /api/frame/contours`: recibe un frame, lo transforma a escala de
+  grises, aplica un umbral binario, detecta contornos externos y devuelve un
+  JPEG con los contornos dibujados en verde.
 
 Respuesta actual de `GET /api/health`:
 
@@ -96,12 +99,13 @@ pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
 `multipart/form-data` a los endpoints `/api/frame/grayscale`,
 `/api/frame/blur` y `/api/frame/difference`. La respuesta de diferencia se
-envía después a `/api/frame/threshold` para calcular la vista umbralizada sobre
-esa misma diferencia. Las respuestas se consumen como `Blob`, se convierten en
-URLs temporales y se muestran junto al vídeo original como vistas procesadas en
-escala de grises, con desenfoque, con diferencia entre frames y con
-umbralización. Esta API requiere un contexto seguro en navegadores modernos,
-por eso Nginx se sirve por HTTPS local.
+envía después a `/api/frame/threshold` y `/api/frame/contours` para calcular la
+vista umbralizada y la vista con contornos sobre esa misma diferencia. Las
+respuestas se consumen como `Blob`, se convierten en URLs temporales y se
+muestran junto al vídeo original como vistas procesadas en escala de grises, con
+desenfoque, con diferencia entre frames, con umbralización y con contornos. Esta
+API requiere un contexto seguro en navegadores modernos, por eso Nginx se sirve
+por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
 `/api/frame...` sobre el mismo origen (`https://localhost:8443` o
@@ -137,6 +141,7 @@ URLs principales:
 - Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
 - Procesado de diferencia entre frames: `http://localhost:8000/api/frame/difference`
 - Procesado con umbral binario: `http://localhost:8000/api/frame/threshold`
+- Procesado con detección de contornos: `http://localhost:8000/api/frame/contours`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -197,6 +202,8 @@ Estado auditado:
   con la diferencia respecto al frame anterior.
 - Endpoint `/api/frame/threshold` disponible para devolver un JPEG procesado
   con umbral binario.
+- Endpoint `/api/frame/contours` disponible para devolver un JPEG procesado
+  con contornos dibujados sobre la imagen umbralizada.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
 - No existe todavía una suite de pruebas backend.

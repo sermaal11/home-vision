@@ -41,3 +41,30 @@ def threshold_frame(frame):
         cv2.THRESH_BINARY
     )
     return threshold
+
+def find_motion_contours(frame):
+
+    contours, _ = cv2.findContours(
+        frame,
+        cv2.RETR_EXTERNAL,
+        cv2.CHAIN_APPROX_SIMPLE
+    )
+
+    return contours
+
+def draw_contours(frame, contours):
+
+    contour_frame = cv2.cvtColor(
+        frame,
+        cv2.COLOR_GRAY2BGR
+    )
+
+    cv2.drawContours(
+        contour_frame,
+        contours,
+        -1,
+        (0, 255, 0),
+        2
+    )
+
+    return contour_frame

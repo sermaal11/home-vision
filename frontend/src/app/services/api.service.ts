@@ -78,4 +78,17 @@ export class ApiService {
 		}
 		return await response.blob();
 	}
+
+	async getContoursFrame(blob: Blob) {
+		const formData = new FormData();
+		formData.append("frame", blob, "frame.jpg");
+		const response = await fetch(API_CONFIG.contoursFrame, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new Error(`Contours frame request failed: ${response.status}`);
+		}
+		return await response.blob();
+	}
 }
