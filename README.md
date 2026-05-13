@@ -3,8 +3,9 @@
 Home Vision es un proyecto personal nacido de la motivación propia por
 aprender, experimentar y explorar conocimientos en arquitectura web y visión
 doméstica. La implementación actual integra una API REST mínima con FastAPI,
-una interfaz Angular con acceso a cámara del navegador y una capa de
-orquestación con Docker Compose y Nginx sobre HTTPS local.
+una interfaz Angular con acceso a cámara del navegador, validaciones de salud
+para los módulos de visión y una capa de orquestación con Docker Compose y
+Nginx sobre HTTPS local.
 
 ## Objetivos del proyecto
 
@@ -15,12 +16,14 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 - Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
   desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
   superposición sobre la imagen real.
+- Preparar la base para detección facial con MediaPipe y validar su carga desde
+  endpoints de salud del backend.
 
 ## Tecnologías utilizadas
 
 | Área | Tecnología |
 | --- | --- |
-| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV headless, NumPy |
+| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV headless, NumPy, MediaPipe |
 | Frontend | Angular 21, Angular Router, TypeScript, Tailwind CSS, Vitest |
 | Infraestructura | Docker, Docker Compose, Nginx |
 
@@ -34,9 +37,11 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │   │   ├── main.py
 │   │   ├── routes/
 │   │   │   ├── frame.py
-│   │   │   └── health.py
+│   │   │   ├── health.py
+│   │   │   └── mediapipe_face.py
 │   │   └── services/
 │   │       ├── frame_service.py
+│   │       ├── mediapipe_face_service.py
 │   │       └── system_service.py
 │   └── requirements.txt
 ├── docker/
@@ -57,6 +62,9 @@ orquestación con Docker Compose y Nginx sobre HTTPS local.
 │       │       └── motion-lab.ts
 │       ├── config/api.config.ts
 │       ├── pages/
+│       │   ├── face-detection/
+│       │   │   ├── face-detection-page.html
+│       │   │   └── face-detection-page.ts
 │       │   ├── motion-lab/
 │       │   │   ├── motion-lab-page.html
 │       │   │   └── motion-lab-page.ts
@@ -77,6 +85,10 @@ varias rutas bajo el prefijo `/api`:
 
 - `GET /api/health`: delega en `backend/app/services/system_service.py` y
   devuelve el estado básico del sistema.
+- `GET /api/health/frame`: valida la carga del módulo de procesamiento de
+  frames y devuelve versiones de OpenCV y NumPy.
+- `GET /api/health/mediapipe`: valida que el detector facial de MediaPipe pueda
+  cargarse en el backend.
 - `POST /api/frame`: recibe un archivo multipart en el campo `frame`, decodifica
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
 - `POST /api/frame/grayscale`: recibe el mismo formato de frame, lo transforma
@@ -105,18 +117,32 @@ Respuesta actual de `GET /api/health`:
 {"status":"ok","message":"Home Vision Backend is running!"}
 ```
 
+Ejemplos de respuestas de salud de los módulos de visión:
+
+```json
+{"opencv_loaded":true,"numpy_loaded":true,"opencv_version":"4.11.0","numpy_version":"1.26.4"}
+```
+
+```json
+{"mediapipe_loaded":true}
+```
+
 El frontend usa Angular Router con rutas definidas en
 `frontend/src/app/app.routes.ts`. La ruta `/` muestra una página de bienvenida
-con una versión condensada del propósito, arquitectura y flujo del proyecto. La
-ruta `/motion-lab` muestra el laboratorio visual de detección de movimiento,
-que reutiliza el componente de cámara ubicado en
-`frontend/src/app/components/motion-lab/`. El layout global en
+con una versión condensada del propósito, arquitectura y flujo del proyecto,
+además de un panel pequeño de salud que consulta `/api/health`,
+`/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-lab` muestra el
+laboratorio visual de detección de movimiento, que reutiliza el componente de
+cámara ubicado en `frontend/src/app/components/motion-lab/`. La ruta
+`/face-detection` deja preparada la página de detección facial para conectar
+futuros endpoints de MediaPipe. El layout global en
 `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
 estado del backend.
 
-La aplicación consulta `GET /api/health` desde `ApiService` usando la ruta
-compartida definida en `frontend/src/app/config/api.config.ts` y muestra el
-mensaje recibido en el encabezado global.
+La aplicación consulta los endpoints de salud desde `ApiService` usando las
+rutas compartidas definidas en `frontend/src/app/config/api.config.ts`. El
+mensaje de `/api/health` se muestra en el encabezado global y el estado de los
+módulos se muestra en la Home.
 
 El componente `MotionLabComponent` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
@@ -164,8 +190,11 @@ npm start
 URLs principales:
 
 - Backend: `http://localhost:8000/api/health`
+- Salud de frames/OpenCV: `http://localhost:8000/api/health/frame`
+- Salud de MediaPipe: `http://localhost:8000/api/health/mediapipe`
 - Home frontend: `http://localhost:4200/`
 - Motion Lab frontend: `http://localhost:4200/motion-lab`
+- Face Detection frontend: `http://localhost:4200/face-detection`
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
 - Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
@@ -189,11 +218,26 @@ Levantar todos los servicios:
 docker compose up
 ```
 
+Reconstruir imágenes y arrancar en segundo plano después de cambios en
+dependencias, Dockerfiles o configuración de frontend/backend:
+
+```sh
+docker compose up -d --build
+```
+
 Docker Compose construye y ejecuta tres servicios:
 
 - `backend`: API FastAPI expuesta en `http://localhost:8000/api/health`.
 - `frontend`: servidor de desarrollo Angular dentro del contenedor.
-- `nginx`: proxy HTTPS disponible en `https://localhost:8443/`; reenvía `/api/` al backend.
+- `nginx`: proxy HTTPS disponible en `https://localhost:8443/`; reenvía `/api/`
+  al backend y el resto de rutas al servidor Angular.
+
+El `backend/Dockerfile` instala librerías nativas necesarias para OpenCV y
+MediaPipe en `python:3.12-slim`, y define `MPLCONFIGDIR=/tmp/matplotlib` para
+evitar problemas de escritura de caché cuando MediaPipe importa dependencias de
+Matplotlib. `docker/nginx/default.conf` usa el resolver interno de Docker
+(`127.0.0.11`) para que Nginx resuelva `frontend` y `backend` aunque sus IPs
+internas cambien tras un rebuild.
 
 En una máquina de red local también puede accederse usando el nombre del host,
 por ejemplo `https://homelab:8443/` y `https://homelab:8443/api/health`.
@@ -207,6 +251,15 @@ recarga o reinicia Nginx para aplicar la nueva configuración:
 
 ```sh
 docker compose restart nginx
+```
+
+Comandos útiles de validación tras levantar Docker:
+
+```sh
+curl http://localhost:8000/api/health
+curl http://localhost:8000/api/health/frame
+curl http://localhost:8000/api/health/mediapipe
+curl -k https://localhost:8443/api/health
 ```
 
 ## Pruebas y validación
@@ -223,8 +276,11 @@ Estado auditado:
 
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
-- Routing frontend disponible con las páginas `/` y `/motion-lab`.
+- Routing frontend disponible con las páginas `/`, `/motion-lab` y
+  `/face-detection`.
 - Endpoint de salud del backend disponible en `/api/health`.
+- Endpoint de salud de frames/OpenCV disponible en `/api/health/frame`.
+- Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
 - Endpoint `/api/frame` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.
 - Endpoint `/api/frame/grayscale` disponible para devolver un JPEG procesado en
@@ -243,6 +299,7 @@ Estado auditado:
   con rectángulos rojos sobre las áreas de movimiento relevantes.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
+- Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
 
 ## Estado y trabajo futuro
@@ -254,6 +311,7 @@ principal de visión doméstica. Próximos pasos recomendados:
 - Extraer el procesamiento de imagen a un servicio backend dedicado cuando crezca.
 - Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
 - Añadir pruebas backend con `pytest`.
+- Implementar el flujo completo de detección facial en backend y frontend.
 - Ampliar componentes Angular para visualizar más resultados de visión.
 - Preparar configuración diferenciada para desarrollo y producción.
 

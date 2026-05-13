@@ -3,6 +3,16 @@ import numpy as np
 
 previous_frame = None
 
+def frame_status():
+    opencv_version = getattr(cv2, "__version__", None)
+    return {
+        "opencv_loaded": opencv_version is not None,
+        "numpy_loaded": np is not None,
+        "opencv_version": opencv_version,
+        "numpy_version": np.__version__,
+    }
+
+
 def decode_frame(content: bytes):
     np_array = np.frombuffer(content, np.uint8)
     return cv2.imdecode(np_array, cv2.IMREAD_COLOR)

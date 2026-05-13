@@ -14,6 +14,22 @@ export class ApiService {
 		return await response.json();
 	}
 
+	async getFrameHealth() {
+		const response = await fetch(API_CONFIG.frameHealth);
+		if (!response.ok) {
+			throw new Error(`Frame health request failed: ${response.status}`);
+		}
+		return await response.json();
+	}
+
+	async getMediapipeHealth() {
+		const response = await fetch(API_CONFIG.mediapipeHealth);
+		if (!response.ok) {
+			throw new Error(`Mediapipe health request failed: ${response.status}`);
+		}
+		return await response.json();
+	}
+
 	async getOriginalFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");

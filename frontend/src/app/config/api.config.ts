@@ -1,5 +1,7 @@
 export const API_CONFIG = {
 	health: '/api/health',
+	frameHealth: '/api/health/frame',
+	mediapipeHealth: '/api/health/mediapipe',
 	frame: '/api/frame',
 	grayscaleFrame: '/api/frame/grayscale',
 	blurFrame: '/api/frame/blur',
