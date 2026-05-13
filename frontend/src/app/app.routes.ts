@@ -10,9 +10,13 @@ export const routes: Routes = [
     title: 'Home Vision',
   },
   {
-    path: 'motion-lab',
+    path: 'motion-detection',
     component: MotionLabPage,
-    title: 'Home Vision | Motion Lab',
+    title: 'Home Vision | Motion Detection',
+  },
+  {
+    path: 'motion-lab',
+    redirectTo: 'motion-detection',
   },
   {
     path: 'face-detection',

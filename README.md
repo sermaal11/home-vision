@@ -138,9 +138,10 @@ El frontend usa Angular Router con rutas definidas en
 `frontend/src/app/app.routes.ts`. La ruta `/` muestra una página de bienvenida
 con una versión condensada del propósito, arquitectura y flujo del proyecto,
 además de un panel pequeño de salud que consulta `/api/health`,
-`/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-lab` muestra el
-laboratorio visual de detección de movimiento, que reutiliza el componente de
-cámara ubicado en `frontend/src/app/components/motion-lab/`. La ruta
+`/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-detection`
+muestra la detección visual de movimiento, que reutiliza el componente de cámara
+ubicado en `frontend/src/app/components/motion-lab/`. La ruta antigua
+`/motion-lab` redirige a `/motion-detection` para mantener compatibilidad. La ruta
 `/face-detection` muestra las secciones Face Box y Face Mesh. Ambas capturan
 frames desde la cámara y enseñan el original junto al JPEG procesado por
 MediaPipe: `/api/mediapipe/face` dibuja cajas faciales y
@@ -202,7 +203,8 @@ URLs principales:
 - Salud de frames/OpenCV: `http://localhost:8000/api/health/frame`
 - Salud de MediaPipe: `http://localhost:8000/api/health/mediapipe`
 - Home frontend: `http://localhost:4200/`
-- Motion Lab frontend: `http://localhost:4200/motion-lab`
+- Motion Detection frontend: `http://localhost:4200/motion-detection`
+- Redirección antigua de Motion Lab: `http://localhost:4200/motion-lab`
 - Face Detection frontend: `http://localhost:4200/face-detection`
 - Recepción de frames: `http://localhost:8000/api/frame`
 - Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
@@ -294,8 +296,8 @@ Estado auditado:
 
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
-- Routing frontend disponible con las páginas `/`, `/motion-lab` y
-  `/face-detection`.
+- Routing frontend disponible con las páginas `/`, `/motion-detection` y
+  `/face-detection`; `/motion-lab` redirige a `/motion-detection`.
 - Endpoint de salud del backend disponible en `/api/health`.
 - Endpoint de salud de frames/OpenCV disponible en `/api/health/frame`.
 - Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
