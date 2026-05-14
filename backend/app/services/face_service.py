@@ -21,7 +21,7 @@ face_mesh = mp_face_mesh.FaceMesh(
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 
-def mediapipe_status():
+def face_status():
     return {
         "mediapipe_loaded": face_detection is not None
     }

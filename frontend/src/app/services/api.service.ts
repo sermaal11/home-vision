@@ -33,7 +33,7 @@ export class ApiService {
 	async getOriginalFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.frame, {
+		const response = await fetch(API_CONFIG.motion, {
 			method: "POST",
 			body: formData,
 		});
@@ -46,7 +46,7 @@ export class ApiService {
 	async getGrayscaleFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.grayscaleFrame, {
+		const response = await fetch(API_CONFIG.motionGrayscale, {
 			method: "POST",
 			body: formData,
 		});
@@ -59,7 +59,7 @@ export class ApiService {
 	async getBlurFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.blurFrame, {
+		const response = await fetch(API_CONFIG.motionBlur, {
 			method: "POST",
 			body: formData,
 		});
@@ -72,7 +72,7 @@ export class ApiService {
 	async getDifferenceFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.differenceFrame, {
+		const response = await fetch(API_CONFIG.motionDifference, {
 			method: "POST",
 			body: formData,
 		});
@@ -85,7 +85,7 @@ export class ApiService {
 	async getThresholdFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.thresholdFrame, {
+		const response = await fetch(API_CONFIG.motionThreshold, {
 			method: "POST",
 			body: formData,
 		});
@@ -98,7 +98,7 @@ export class ApiService {
 	async getContoursFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.contoursFrame, {
+		const response = await fetch(API_CONFIG.motionContours, {
 			method: "POST",
 			body: formData,
 		});
@@ -111,7 +111,7 @@ export class ApiService {
 	async getMotionBoxesFrame(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.motionBoxesFrame, {
+		const response = await fetch(API_CONFIG.motionBoxes, {
 			method: "POST",
 			body: formData,
 		});
@@ -125,7 +125,7 @@ export class ApiService {
 		const formData = new FormData();
 		formData.append("frame", frame, "frame.jpg");
 		formData.append("difference", difference, "difference.jpg");
-		const response = await fetch(API_CONFIG.motionOverlayFrame, {
+		const response = await fetch(API_CONFIG.motionOverlay, {
 			method: "POST",
 			body: formData,
 		});
@@ -138,12 +138,12 @@ export class ApiService {
 	async detectFaces(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.mediapipeFace, {
+		const response = await fetch(API_CONFIG.mediapipeFaceBox, {
 			method: "POST",
 			body: formData,
 		});
 		if (!response.ok) {
-			throw new Error(`Mediapipe face detection request failed: ${response.status}`);
+			throw new Error(`Mediapipe face box request failed: ${response.status}`);
 		}
 		return await response.blob();
 	}

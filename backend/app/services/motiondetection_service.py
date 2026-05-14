@@ -3,7 +3,7 @@ import numpy as np
 
 previous_frame = None
 
-def frame_status():
+def motion_detection_status():
     opencv_version = getattr(cv2, "__version__", None)
     return {
         "opencv_loaded": opencv_version is not None,

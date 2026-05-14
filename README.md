@@ -90,30 +90,30 @@ varias rutas bajo el prefijo `/api`:
   frames y devuelve versiones de OpenCV y NumPy.
 - `GET /api/health/mediapipe`: valida que el detector facial de MediaPipe pueda
   cargarse en el backend.
-- `POST /api/mediapipe/face`: recibe un archivo multipart en el campo `frame`,
+- `POST /api/mediapipe/face-box`: recibe un archivo multipart en el campo `frame`,
   ejecuta el detector facial de MediaPipe y devuelve un JPEG con la caja facial
   dibujada cuando se detecta un rostro.
 - `POST /api/mediapipe/face-mesh`: recibe un archivo multipart en el campo
   `frame`, ejecuta Face Mesh de MediaPipe y devuelve un JPEG con la malla facial
   dibujada cuando se detectan landmarks.
-- `POST /api/frame`: recibe un archivo multipart en el campo `frame`, decodifica
+- `POST /api/motion`: recibe un archivo multipart en el campo `frame`, decodifica
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
-- `POST /api/frame/grayscale`: recibe el mismo formato de frame, lo transforma
+- `POST /api/motion/grayscale`: recibe el mismo formato de frame, lo transforma
   a escala de grises y devuelve un JPEG procesado.
-- `POST /api/frame/blur`: recibe el mismo formato de frame, lo transforma a
+- `POST /api/motion/blur`: recibe el mismo formato de frame, lo transforma a
   escala de grises, aplica un desenfoque gaussiano y devuelve un JPEG procesado.
-- `POST /api/frame/difference`: recibe el mismo formato de frame, lo transforma
+- `POST /api/motion/difference`: recibe el mismo formato de frame, lo transforma
   a escala de grises, aplica desenfoque y devuelve un JPEG con la diferencia
   respecto al frame anterior procesado.
-- `POST /api/frame/threshold`: recibe un frame, lo transforma a escala de
+- `POST /api/motion/threshold`: recibe un frame, lo transforma a escala de
   grises, aplica un umbral binario y devuelve un JPEG procesado.
-- `POST /api/frame/contours`: recibe un frame, lo transforma a escala de
+- `POST /api/motion/contours`: recibe un frame, lo transforma a escala de
   grises, aplica un umbral binario, detecta contornos externos y devuelve un
   JPEG con los contornos dibujados en verde.
-- `POST /api/frame/motion-boxes`: recibe un frame, lo transforma a escala de
+- `POST /api/motion/motion-boxes`: recibe un frame, lo transforma a escala de
   grises, aplica un umbral binario, detecta contornos externos y devuelve un
   JPEG con rectángulos verdes alrededor de las áreas de movimiento relevantes.
-- `POST /api/frame/motion-overlay`: recibe dos archivos multipart, `frame` con
+- `POST /api/motion/motion-overlay`: recibe dos archivos multipart, `frame` con
   la imagen real y `difference` con la diferencia entre frames; usa la
   diferencia para detectar contornos y devuelve el frame real con rectángulos
   rojos sobre las áreas de movimiento relevantes.
@@ -144,7 +144,7 @@ ubicado en `frontend/src/app/components/motion-lab/`. La ruta antigua
 `/motion-lab` redirige a `/motion-detection` para mantener compatibilidad. La ruta
 `/face-detection` muestra las secciones Face Box y Face Mesh. Ambas capturan
 frames desde la cámara y enseñan el original junto al JPEG procesado por
-MediaPipe: `/api/mediapipe/face` dibuja cajas faciales y
+MediaPipe: `/api/mediapipe/face-box` dibuja cajas faciales y
 `/api/mediapipe/face-mesh` dibuja la malla de landmarks. El layout global en
 `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
 estado del backend.
@@ -157,12 +157,12 @@ módulos se muestra en la Home.
 El componente `MotionLabComponent` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
-`multipart/form-data` a los endpoints `/api/frame/grayscale`,
-`/api/frame/blur` y `/api/frame/difference`. La respuesta de diferencia se
-envía después a `/api/frame/threshold`, `/api/frame/contours` y
-`/api/frame/motion-boxes` para calcular la vista umbralizada, la vista con
+`multipart/form-data` a los endpoints `/api/motion/grayscale`,
+`/api/motion/blur` y `/api/motion/difference`. La respuesta de diferencia se
+envía después a `/api/motion/threshold`, `/api/motion/contours` y
+`/api/motion/motion-boxes` para calcular la vista umbralizada, la vista con
 contornos y la vista con cajas de movimiento sobre esa misma diferencia. Para
-`/api/frame/motion-overlay`, envía el frame original en el campo `frame` y la
+`/api/motion/motion-overlay`, envía el frame original en el campo `frame` y la
 diferencia en el campo `difference`, de modo que el backend dibuje las cajas
 sobre la imagen real. Las respuestas se consumen como `Blob`, se convierten en
 URLs temporales y se muestran junto al vídeo original como vistas procesadas en
@@ -172,7 +172,7 @@ movimiento. Esta API requiere un contexto seguro en navegadores modernos, por
 eso Nginx se sirve por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
-`/api/frame...` sobre el mismo origen (`https://localhost:8443` o
+`/api/motion...` sobre el mismo origen (`https://localhost:8443` o
 `https://homelab:8443`) y Nginx reenvía esas peticiones al servicio backend.
 Como frontend y API se sirven desde el mismo origen público, el backend no
 necesita configurar CORS en este flujo.
@@ -206,15 +206,15 @@ URLs principales:
 - Motion Detection frontend: `http://localhost:4200/motion-detection`
 - Redirección antigua de Motion Lab: `http://localhost:4200/motion-lab`
 - Face Detection frontend: `http://localhost:4200/face-detection`
-- Recepción de frames: `http://localhost:8000/api/frame`
-- Procesado en escala de grises: `http://localhost:8000/api/frame/grayscale`
-- Procesado con desenfoque: `http://localhost:8000/api/frame/blur`
-- Procesado de diferencia entre frames: `http://localhost:8000/api/frame/difference`
-- Procesado con umbral binario: `http://localhost:8000/api/frame/threshold`
-- Procesado con detección de contornos: `http://localhost:8000/api/frame/contours`
-- Procesado con cajas de movimiento: `http://localhost:8000/api/frame/motion-boxes`
-- Procesado con overlay de movimiento: `http://localhost:8000/api/frame/motion-overlay`
-- Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face`
+- Recepción de frames: `http://localhost:8000/api/motion`
+- Procesado en escala de grises: `http://localhost:8000/api/motion/grayscale`
+- Procesado con desenfoque: `http://localhost:8000/api/motion/blur`
+- Procesado de diferencia entre frames: `http://localhost:8000/api/motion/difference`
+- Procesado con umbral binario: `http://localhost:8000/api/motion/threshold`
+- Procesado con detección de contornos: `http://localhost:8000/api/motion/contours`
+- Procesado con cajas de movimiento: `http://localhost:8000/api/motion/motion-boxes`
+- Procesado con overlay de movimiento: `http://localhost:8000/api/motion/motion-overlay`
+- Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face-box`
 - Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
 - Frontend Angular: `http://localhost:4200/`
 
@@ -278,7 +278,7 @@ curl -k https://localhost:8443/api/health
 Para probar los endpoints de MediaPipe con una imagen local:
 
 ```sh
-curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face
+curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-box
 curl -o face-mesh.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-mesh
 ```
 
@@ -301,25 +301,25 @@ Estado auditado:
 - Endpoint de salud del backend disponible en `/api/health`.
 - Endpoint de salud de frames/OpenCV disponible en `/api/health/frame`.
 - Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
-- Endpoint de detección facial disponible en `/api/mediapipe/face` y devuelve
+- Endpoint de detección facial disponible en `/api/mediapipe/face-box` y devuelve
   un JPEG con cajas faciales.
 - Endpoint de malla facial disponible en `/api/mediapipe/face-mesh` y devuelve
   un JPEG con landmarks faciales.
-- Endpoint `/api/frame` disponible para recibir frames multipart en el campo
+- Endpoint `/api/motion` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.
-- Endpoint `/api/frame/grayscale` disponible para devolver un JPEG procesado en
+- Endpoint `/api/motion/grayscale` disponible para devolver un JPEG procesado en
   escala de grises.
-- Endpoint `/api/frame/blur` disponible para devolver un JPEG procesado con
+- Endpoint `/api/motion/blur` disponible para devolver un JPEG procesado con
   escala de grises y desenfoque gaussiano.
-- Endpoint `/api/frame/difference` disponible para devolver un JPEG procesado
+- Endpoint `/api/motion/difference` disponible para devolver un JPEG procesado
   con la diferencia respecto al frame anterior.
-- Endpoint `/api/frame/threshold` disponible para devolver un JPEG procesado
+- Endpoint `/api/motion/threshold` disponible para devolver un JPEG procesado
   con umbral binario.
-- Endpoint `/api/frame/contours` disponible para devolver un JPEG procesado
+- Endpoint `/api/motion/contours` disponible para devolver un JPEG procesado
   con contornos dibujados sobre la imagen umbralizada.
-- Endpoint `/api/frame/motion-boxes` disponible para devolver un JPEG procesado
+- Endpoint `/api/motion/motion-boxes` disponible para devolver un JPEG procesado
   con rectángulos verdes sobre las áreas de movimiento relevantes.
-- Endpoint `/api/frame/motion-overlay` disponible para devolver el frame real
+- Endpoint `/api/motion/motion-overlay` disponible para devolver el frame real
   con rectángulos rojos sobre las áreas de movimiento relevantes.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.

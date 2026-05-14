@@ -3,13 +3,13 @@ import { NgIf } from "@angular/common";
 import { ApiService } from "../../services/api.service";
 
 @Component({
-	selector: "app-motion-lab",
-	templateUrl: "./motion-lab.html",
+	selector: "app-motion-detection",
+	templateUrl: "./motion-detection.html",
 	standalone: true,
 	imports: [NgIf],
 })
 
-export class MotionLabComponent implements AfterViewInit, OnDestroy {
+export class MotionDetectionComponent implements AfterViewInit, OnDestroy {
 
 	@ViewChild('videoElement')
 	videoElement!: ElementRef<HTMLVideoElement>;

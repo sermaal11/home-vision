@@ -1,19 +1,19 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import Response
-from app.services.frame_service import decode_frame
-from app.services.frame_service import to_grayscale
-from app.services.frame_service import encode_frame
-from app.services.frame_service import blur_frame
-from app.services.frame_service import get_frame_difference
-from app.services.frame_service import threshold_frame
-from app.services.frame_service import find_motion_contours
-from app.services.frame_service import draw_contours
-from app.services.frame_service import draw_motion_boxes
-from app.services.frame_service import draw_motion_overlay
+from app.services.motiondetection_service import decode_frame
+from app.services.motiondetection_service import to_grayscale
+from app.services.motiondetection_service import encode_frame
+from app.services.motiondetection_service import blur_frame
+from app.services.motiondetection_service import get_frame_difference
+from app.services.motiondetection_service import threshold_frame
+from app.services.motiondetection_service import find_motion_contours
+from app.services.motiondetection_service import draw_contours
+from app.services.motiondetection_service import draw_motion_boxes
+from app.services.motiondetection_service import draw_motion_overlay
 
 router = APIRouter()
 
-@router.post("/frame")
+@router.post("/motion")
 async def receive_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -25,7 +25,7 @@ async def receive_frame(frame: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(error)) from error
     return Response(encoded_frame, media_type="image/jpeg")
 
-@router.post("/frame/grayscale")
+@router.post("/motion/grayscale")
 async def receive_grayscale_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -38,7 +38,7 @@ async def receive_grayscale_frame(frame: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=str(error)) from error
     return Response(encoded_frame, media_type="image/jpeg")
 
-@router.post("/frame/blur")
+@router.post("/motion/blur")
 async def receive_blur_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -58,7 +58,7 @@ async def receive_blur_frame(frame: UploadFile = File(...)):
         media_type="image/jpeg"
     )
 
-@router.post("/frame/difference")
+@router.post("/motion/difference")
 async def receive_difference_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -79,7 +79,7 @@ async def receive_difference_frame(frame: UploadFile = File(...)):
         media_type="image/jpeg"
     )
 
-@router.post("/frame/threshold")
+@router.post("/motion/threshold")
 async def receive_threshold_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -99,7 +99,7 @@ async def receive_threshold_frame(frame: UploadFile = File(...)):
         media_type="image/jpeg"
     )
 
-@router.post("/frame/contours")
+@router.post("/motion/contours")
 async def receive_contours_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -121,7 +121,7 @@ async def receive_contours_frame(frame: UploadFile = File(...)):
         media_type="image/jpeg"
     )
 
-@router.post("/frame/motion-boxes")
+@router.post("/motion/motion-boxes")
 async def receive_motion_boxes_frame(frame: UploadFile = File(...)):
     content = await frame.read()
     decoded_frame = decode_frame(content)
@@ -144,7 +144,7 @@ async def receive_motion_boxes_frame(frame: UploadFile = File(...)):
         media_type="image/jpeg"
     )
 
-@router.post("/frame/motion-overlay")
+@router.post("/motion/motion-overlay")
 async def receive_motion_overlay_frame(
     frame: UploadFile = File(...),
     difference: UploadFile = File(...)
