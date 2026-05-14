@@ -67,24 +67,15 @@ def draw_finger_counter(frame, results):
             handedness
         )
         total_finger_count += finger_count
-        mp_drawing.draw_landmarks(
-            image=frame,
-            landmark_list=hand_landmarks,
-            connections=mp_hands.HAND_CONNECTIONS,
-            landmark_drawing_spec=mp_drawing_styles
-                .get_default_hand_landmarks_style(),
-            connection_drawing_spec=mp_drawing_styles
-                .get_default_hand_connections_style()
-        )
         wrist = hand_landmarks.landmark[0]
         wrist_x = int(wrist.x * width)
         wrist_y = int(wrist.y * height)
         cv2.putText(
             frame,
-            f"Fingers: {finger_count}",
+            f"Dedos levantados: {finger_count}",
             (wrist_x, wrist_y - 20),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.8,
+            0.7,
             (0, 255, 0),
             2
         )

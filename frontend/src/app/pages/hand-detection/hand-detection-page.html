@@ -17,37 +17,32 @@
 
 	</div>
 
-	<section class="space-y-4">
+	<div class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm leading-6 text-emerald-100">
+		Pasa el ratón sobre cada recuadro para ver una explicación breve de lo que
+		ocurre en esa detección.
+	</div>
 
-		<div class="space-y-1">
-			<h3 class="text-xl font-semibold text-white">
-				Hand Landmarks
-			</h3>
-			<p class="text-sm leading-6 text-zinc-400">
-				Visualización en vivo de la detección de manos con landmarks y conexiones
-				dibujadas sobre el frame procesado.
-			</p>
-		</div>
+	<section class="space-y-4">
 
 		<div class="grid gap-4 md:grid-cols-2">
 
 			<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
 				<h4 class="text-sm font-semibold text-white">
-					Landmarks
+					Esqueleto de mano
 				</h4>
 				<p class="mt-2 text-sm leading-6 text-zinc-400">
-					MediaPipe Hands detecta 21 puntos por mano y el backend dibuja esos
-					landmarks junto con sus conexiones para ver la estructura de la mano.
+					Los landmarks resumen la postura de la mano en puntos clave: muñeca,
+					nudillos, articulaciones y puntas de dedos.
 				</p>
 			</article>
 
 			<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
 				<h4 class="text-sm font-semibold text-white">
-					Finger Count
+					Conteo por postura
 				</h4>
 				<p class="mt-2 text-sm leading-6 text-zinc-400">
-					Usa la posición de las puntas de los dedos, sus articulaciones y la
-					lateralidad de la mano para estimar cuántos dedos están extendidos.
+					El conteo interpreta dedos extendidos comparando posiciones relativas
+					de landmarks, no reconociendo dedos como objetos separados.
 				</p>
 			</article>
 
@@ -79,8 +74,8 @@
 					</ng-template>
 					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 						<p class="text-sm leading-6 text-zinc-100">
-							MediaPipe Hands detecta puntos clave de la mano y el backend dibuja
-							landmarks y conexiones sobre el frame capturado.
+							Vista de `/api/mediapipe/hands`: MediaPipe Hands detecta hasta dos
+							manos y el backend dibuja landmarks y conexiones sobre el frame.
 						</p>
 					</div>
 				</div>
@@ -109,10 +104,11 @@
 					</ng-template>
 					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 						<p class="text-sm leading-6 text-zinc-100">
-							El backend compara la punta de cada dedo con sus articulaciones y
-							usa la lateralidad de MediaPipe para estimar el pulgar. El total
-							llega en la cabecera X-Finger-Count. Esta vista funciona mejor con
-							la palma abierta mirando hacia la cámara.
+							Vista de `/api/mediapipe/hands/finger-counter`: el backend compara
+							puntas y articulaciones, usa lateralidad para el pulgar y devuelve
+							el total en `X-Finger-Count`. Solo dibuja la etiqueta de dedos
+							levantados; funciona mejor con la palma abierta mirando hacia la
+							cámara.
 						</p>
 					</div>
 				</div>
