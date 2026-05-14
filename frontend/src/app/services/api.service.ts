@@ -161,22 +161,6 @@ export class ApiService {
 		return await response.blob();
 	}
 
-	async detectEyeTracking(blob: Blob) {
-		const formData = new FormData();
-		formData.append("frame", blob, "frame.jpg");
-		const response = await fetch(API_CONFIG.mediapipeEyeTracking, {
-			method: "POST",
-			body: formData,
-		});
-		if (!response.ok) {
-			throw new Error(`Mediapipe eye tracking request failed: ${response.status}`);
-		}
-		return {
-			blob: await response.blob(),
-			gazeDirection: response.headers.get("X-Gaze-Direction") ?? "Unknown",
-		};
-	}
-
 	async detectHands(blob: Blob) {
 		const formData = new FormData();
 		formData.append("frame", blob, "frame.jpg");
