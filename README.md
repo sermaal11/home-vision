@@ -16,9 +16,9 @@ Nginx sobre HTTPS local.
 - Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
   desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
   superposición sobre la imagen real.
-- Exponer visualizaciones de detección facial con MediaPipe, dibujar cajas y
-  mallas faciales sobre rostros detectados, y validar su carga desde endpoints
-  de salud del backend.
+- Exponer visualizaciones de detección con MediaPipe, dibujar cajas faciales,
+  mallas faciales y landmarks de manos sobre frames capturados, y validar su
+  carga desde endpoints de salud del backend.
 
 ## Tecnologías utilizadas
 
@@ -37,12 +37,14 @@ Nginx sobre HTTPS local.
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── routes/
-│   │   │   ├── frame.py
+│   │   │   ├── face.py
+│   │   │   ├── hand.py
 │   │   │   ├── health.py
-│   │   │   └── mediapipe_face.py
+│   │   │   └── motiondetection.py
 │   │   └── services/
-│   │       ├── frame_service.py
-│   │       ├── mediapipe_face_service.py
+│   │       ├── face_service.py
+│   │       ├── hand_service.py
+│   │       ├── motiondetection_service.py
 │   │       └── system_service.py
 │   └── requirements.txt
 ├── docker/
@@ -57,18 +59,17 @@ Nginx sobre HTTPS local.
 │   ├── package.json
 │   └── src/app/
 │       ├── app.routes.ts
-│       ├── components/
-│       │   └── motion-lab/
-│       │       ├── motion-lab.html
-│       │       └── motion-lab.ts
 │       ├── config/api.config.ts
 │       ├── pages/
 │       │   ├── face-detection/
 │       │   │   ├── face-detection-page.html
 │       │   │   └── face-detection-page.ts
-│       │   ├── motion-lab/
-│       │   │   ├── motion-lab-page.html
-│       │   │   └── motion-lab-page.ts
+│       │   ├── hand-detection/
+│       │   │   ├── hand-detection-page.html
+│       │   │   └── hand-detection-page.ts
+│       │   ├── motion-detection/
+│       │   │   ├── motion-detection-page.html
+│       │   │   └── motion-detection-page.ts
 │       │   └── home/
 │       │       ├── home.html
 │       │       └── home.ts
@@ -96,6 +97,9 @@ varias rutas bajo el prefijo `/api`:
 - `POST /api/mediapipe/face-mesh`: recibe un archivo multipart en el campo
   `frame`, ejecuta Face Mesh de MediaPipe y devuelve un JPEG con la malla facial
   dibujada cuando se detectan landmarks.
+- `POST /api/mediapipe/hands`: recibe un archivo multipart en el campo `frame`,
+  ejecuta MediaPipe Hands y devuelve un JPEG con landmarks y conexiones de manos
+  dibujados cuando se detectan manos.
 - `POST /api/motion`: recibe un archivo multipart en el campo `frame`, decodifica
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
 - `POST /api/motion/grayscale`: recibe el mismo formato de frame, lo transforma
@@ -139,22 +143,23 @@ El frontend usa Angular Router con rutas definidas en
 con una versión condensada del propósito, arquitectura y flujo del proyecto,
 además de un panel pequeño de salud que consulta `/api/health`,
 `/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-detection`
-muestra la detección visual de movimiento, que reutiliza el componente de cámara
-ubicado en `frontend/src/app/components/motion-lab/`. La ruta antigua
-`/motion-lab` redirige a `/motion-detection` para mantener compatibilidad. La ruta
-`/face-detection` muestra las secciones Face Box y Face Mesh. Ambas capturan
-frames desde la cámara y enseñan el original junto al JPEG procesado por
-MediaPipe: `/api/mediapipe/face-box` dibuja cajas faciales y
-`/api/mediapipe/face-mesh` dibuja la malla de landmarks. El layout global en
-`frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
-estado del backend.
+muestra la detección visual de movimiento directamente desde su page shell. La
+ruta antigua `/motion-lab` redirige a `/motion-detection` para mantener
+compatibilidad. La ruta `/face-detection` muestra las secciones Face Box y Face
+Mesh, y la ruta `/hand-detection` muestra landmarks de manos. Estas páginas
+capturan frames desde la cámara y enseñan el original junto al JPEG procesado
+por MediaPipe: `/api/mediapipe/face-box` dibuja cajas faciales,
+`/api/mediapipe/face-mesh` dibuja la malla de landmarks faciales y
+`/api/mediapipe/hands` dibuja landmarks y conexiones de manos. El layout global
+en `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y
+el estado del backend.
 
 La aplicación consulta los endpoints de salud desde `ApiService` usando las
 rutas compartidas definidas en `frontend/src/app/config/api.config.ts`. El
 mensaje de `/api/health` se muestra en el encabezado global y el estado de los
 módulos se muestra en la Home.
 
-El componente `MotionLabComponent` usa `navigator.mediaDevices.getUserMedia` para
+La página `MotionDetectionPage` usa `navigator.mediaDevices.getUserMedia` para
 pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
 capturar frames en un `<canvas>` oculto y enviarlos al backend como
 `multipart/form-data` a los endpoints `/api/motion/grayscale`,
@@ -164,12 +169,12 @@ envía después a `/api/motion/threshold`, `/api/motion/contours` y
 contornos y la vista con cajas de movimiento sobre esa misma diferencia. Para
 `/api/motion/motion-overlay`, envía el frame original en el campo `frame` y la
 diferencia en el campo `difference`, de modo que el backend dibuje las cajas
-sobre la imagen real. Las respuestas se consumen como `Blob`, se convierten en
-URLs temporales y se muestran junto al vídeo original como vistas procesadas en
-escala de grises, con desenfoque, con diferencia entre frames, con
-umbralización, con contornos, con cajas de movimiento y con overlay de
-movimiento. Esta API requiere un contexto seguro en navegadores modernos, por
-eso Nginx se sirve por HTTPS local.
+sobre la imagen real. Las páginas `FaceDetectionPage` y `HandDetectionPage`
+siguen el mismo patrón de captura para enviar frames a sus endpoints de
+MediaPipe. Las respuestas se consumen como `Blob`, se convierten en URLs
+temporales y se muestran junto al vídeo original como vistas procesadas. Esta
+API requiere un contexto seguro en navegadores modernos, por eso Nginx se sirve
+por HTTPS local.
 
 Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
 `/api/motion...` sobre el mismo origen (`https://localhost:8443` o
@@ -206,6 +211,7 @@ URLs principales:
 - Motion Detection frontend: `http://localhost:4200/motion-detection`
 - Redirección antigua de Motion Lab: `http://localhost:4200/motion-lab`
 - Face Detection frontend: `http://localhost:4200/face-detection`
+- Hand Detection frontend: `http://localhost:4200/hand-detection`
 - Recepción de frames: `http://localhost:8000/api/motion`
 - Procesado en escala de grises: `http://localhost:8000/api/motion/grayscale`
 - Procesado con desenfoque: `http://localhost:8000/api/motion/blur`
@@ -216,6 +222,7 @@ URLs principales:
 - Procesado con overlay de movimiento: `http://localhost:8000/api/motion/motion-overlay`
 - Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face-box`
 - Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
+- Detección de manos MediaPipe: `http://localhost:8000/api/mediapipe/hands`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -280,6 +287,7 @@ Para probar los endpoints de MediaPipe con una imagen local:
 ```sh
 curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-box
 curl -o face-mesh.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-mesh
+curl -o hands.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/hands
 ```
 
 ## Pruebas y validación
@@ -296,8 +304,9 @@ Estado auditado:
 
 - Build Angular correcta.
 - Suite frontend correcta: 1 archivo de pruebas, 4 tests.
-- Routing frontend disponible con las páginas `/`, `/motion-detection` y
-  `/face-detection`; `/motion-lab` redirige a `/motion-detection`.
+- Routing frontend disponible con las páginas `/`, `/motion-detection`,
+  `/face-detection` y `/hand-detection`; `/motion-lab` redirige a
+  `/motion-detection`.
 - Endpoint de salud del backend disponible en `/api/health`.
 - Endpoint de salud de frames/OpenCV disponible en `/api/health/frame`.
 - Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
@@ -305,6 +314,8 @@ Estado auditado:
   un JPEG con cajas faciales.
 - Endpoint de malla facial disponible en `/api/mediapipe/face-mesh` y devuelve
   un JPEG con landmarks faciales.
+- Endpoint de manos disponible en `/api/mediapipe/hands` y devuelve un JPEG con
+  landmarks y conexiones de manos.
 - Endpoint `/api/motion` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.
 - Endpoint `/api/motion/grayscale` disponible para devolver un JPEG procesado en
@@ -324,6 +335,7 @@ Estado auditado:
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
 - Página `/face-detection` disponible con secciones Face Box y Face Mesh en vivo.
+- Página `/hand-detection` disponible con comparación Original y Landmarks en vivo.
 - Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
 
@@ -337,7 +349,7 @@ principal de visión doméstica. Próximos pasos recomendados:
 - Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
 - Añadir pruebas backend con `pytest`.
 - Añadir controles de pausa, frecuencia de captura y selección de vista para
-  Face Detection.
+  Face Detection y Hand Detection.
 - Ampliar componentes Angular para visualizar más resultados de visión.
 - Preparar configuración diferenciada para desarrollo y producción.
 

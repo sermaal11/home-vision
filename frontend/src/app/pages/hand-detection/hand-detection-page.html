@@ -11,39 +11,94 @@
 		</h2>
 
 		<p class="max-w-3xl text-sm leading-6 text-zinc-400">
-			Página preparada para añadir detección de manos con cámara en vivo y
-			procesamiento MediaPipe.
+			Captura frames desde la cámara y compara el frame original con los
+			landmarks de manos procesados por MediaPipe.
 		</p>
 
 	</div>
 
-	<section class="grid gap-4 md:grid-cols-2">
+	<section class="space-y-4">
 
-		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<h3 class="text-lg font-semibold text-white">
-				Entrada de cámara
+		<div class="space-y-1">
+			<h3 class="text-xl font-semibold text-white">
+				Hand Landmarks
 			</h3>
-			<p class="mt-2 text-sm leading-6 text-zinc-400">
-				Este espacio queda reservado para mostrar el frame original capturado
-				desde el navegador.
+			<p class="text-sm leading-6 text-zinc-400">
+				Comparación en vivo entre el frame capturado y la detección de manos con
+				landmarks y conexiones dibujadas.
 			</p>
-			<div class="mt-4 flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-zinc-700 bg-zinc-950 text-sm text-zinc-500">
-				Esperando cámara
-			</div>
-		</article>
+		</div>
 
-		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
-			<h3 class="text-lg font-semibold text-white">
-				Detección de manos
-			</h3>
-			<p class="mt-2 text-sm leading-6 text-zinc-400">
-				Aquí se podrá renderizar el resultado procesado con landmarks, conexiones
-				o cajas de detección sobre la mano.
-			</p>
-			<div class="mt-4 flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-emerald-500/40 bg-emerald-500/10 text-sm text-emerald-100">
-				Esperando detección
+		<p
+			*ngIf="cameraError()"
+			class="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+			{{ cameraError() }}
+		</p>
+
+		<div class="grid gap-4 md:grid-cols-2">
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Original
+				</h4>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="originalFrameUrl(); else originalPlaceholder"
+						[src]="originalFrameUrl()"
+						alt="Frame original capturado por la cámara"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #originalPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando cámara
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Frame real capturado por la cámara. Es la referencia que se envía a
+							MediaPipe para calcular landmarks y conexiones de manos.
+						</p>
+					</div>
+				</div>
 			</div>
-		</article>
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Landmarks
+				</h4>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="handLandmarksFrameUrl(); else handLandmarksPlaceholder"
+						[src]="handLandmarksFrameUrl()"
+						alt="Frame con landmarks de manos de MediaPipe"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #handLandmarksPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando detección
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							MediaPipe Hands detecta puntos clave de la mano y el backend dibuja
+							landmarks y conexiones sobre el frame capturado.
+						</p>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<video
+			#videoElement
+			autoplay
+			playsinline
+			muted
+			class="hidden">
+		</video>
+
+		<canvas #canvasElement class="hidden">
+		</canvas>
 
 	</section>
 

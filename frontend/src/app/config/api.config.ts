@@ -12,4 +12,5 @@ export const API_CONFIG = {
 	motionOverlay: '/api/motion/motion-overlay',
 	mediapipeFaceBox: '/api/mediapipe/face-box',
 	mediapipeFaceMesh: '/api/mediapipe/face-mesh',
+	mediapipeHands: '/api/mediapipe/hands',
 };
