@@ -11,8 +11,8 @@
 		</h2>
 
 		<p class="max-w-3xl text-sm leading-6 text-zinc-400">
-			Captura frames desde la cámara y compara la caja facial con la malla de
-			landmarks procesadas por MediaPipe.
+			Captura frames desde la cámara y compara la caja facial, la malla de
+			landmarks y la pose de cabeza procesadas por MediaPipe.
 		</p>
 
 	</div>
@@ -77,6 +77,36 @@
 						<p class="text-sm leading-6 text-zinc-100">
 							Face Mesh dibuja landmarks y conexiones sobre el rostro para
 							representar su geometría con más detalle que una caja.
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="space-y-2">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h4 class="text-sm font-medium text-zinc-300">
+						Pose
+					</h4>
+					<span class="rounded-md bg-emerald-400 px-2 py-1 text-xs font-semibold text-zinc-950">
+						Mirando: {{ facePoseDirection() }}
+					</span>
+				</div>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="facePoseFrameUrl(); else facePosePlaceholder"
+						[src]="facePoseFrameUrl()"
+						alt="Frame con estimación de pose de cabeza"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #facePosePlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando pose
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Head Pose usa landmarks faciales para marcar la punta de la nariz y
+							dibujar una referencia visual de la orientación de la cabeza.
 						</p>
 					</div>
 				</div>

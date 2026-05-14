@@ -17,8 +17,9 @@ Nginx sobre HTTPS local.
   desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
   superposición sobre la imagen real.
 - Exponer visualizaciones de detección con MediaPipe, dibujar cajas faciales,
-  mallas faciales, puntos de eye tracking y landmarks de manos sobre frames
-  capturados, y validar su carga desde endpoints de salud del backend.
+  mallas faciales, pose de cabeza con ejes 3D sutiles y landmarks de manos
+  sobre frames capturados, y validar su carga desde endpoints de salud del
+  backend.
 
 ## Tecnologías utilizadas
 
@@ -97,9 +98,11 @@ varias rutas bajo el prefijo `/api`:
 - `POST /api/mediapipe/face-mesh`: recibe un archivo multipart en el campo
   `frame`, ejecuta Face Mesh de MediaPipe y devuelve un JPEG con la malla facial
   dibujada cuando se detectan landmarks.
-- `POST /api/mediapipe/eye-tracking`: recibe un archivo multipart en el campo
-  `frame`, ejecuta Face Mesh refinado y devuelve un JPEG con puntos de iris
-  dibujados para visualización de mirada.
+- `POST /api/mediapipe/head-pose`: recibe un archivo multipart en el campo
+  `frame`, ejecuta Face Mesh de MediaPipe, estima la orientación de la cabeza
+  con `cv2.solvePnP` y devuelve un JPEG con ejes 3D sutiles proyectados desde la
+  nariz. La respuesta incluye la cabecera `X-Head-Pose-Direction` con una
+  dirección textual como `Center`, `Left`, `Right`, `Center Up` o `Right Down`.
 - `POST /api/mediapipe/hands`: recibe un archivo multipart en el campo `frame`,
   ejecuta MediaPipe Hands y devuelve un JPEG con landmarks y conexiones de manos
   dibujados cuando se detectan manos.
@@ -148,13 +151,14 @@ además de un panel pequeño de salud que consulta `/api/health`,
 `/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-detection`
 muestra la detección visual de movimiento directamente desde su page shell. La
 ruta antigua `/motion-lab` redirige a `/motion-detection` para mantener
-compatibilidad. La ruta `/face-detection` muestra las secciones Box, Mesh y Eye
-Tracking, y la ruta `/hand-detection` muestra landmarks de manos. Estas páginas
+compatibilidad. La ruta `/face-detection` muestra las secciones Box, Mesh y
+Pose, y la ruta `/hand-detection` muestra landmarks de manos. Estas páginas
 capturan frames desde la cámara y enseñan el JPEG procesado por MediaPipe:
 `/api/mediapipe/face-box` dibuja cajas faciales, `/api/mediapipe/face-mesh`
-dibuja la malla de landmarks faciales, `/api/mediapipe/eye-tracking` dibuja
-puntos de iris para visualizar la mirada y `/api/mediapipe/hands` dibuja
-landmarks y conexiones de manos. El layout global en
+dibuja la malla de landmarks faciales, `/api/mediapipe/head-pose` estima la
+pose de cabeza con Face Mesh y `solvePnP`, dibuja ejes 3D semitransparentes y
+devuelve la dirección en `X-Head-Pose-Direction`, y `/api/mediapipe/hands`
+dibuja landmarks y conexiones de manos. El layout global en
 `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
 estado del backend.
 
@@ -226,7 +230,7 @@ URLs principales:
 - Procesado con overlay de movimiento: `http://localhost:8000/api/motion/motion-overlay`
 - Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face-box`
 - Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
-- Eye Tracking MediaPipe: `http://localhost:8000/api/mediapipe/eye-tracking`
+- Pose de cabeza MediaPipe: `http://localhost:8000/api/mediapipe/head-pose`
 - Detección de manos MediaPipe: `http://localhost:8000/api/mediapipe/hands`
 - Frontend Angular: `http://localhost:4200/`
 
@@ -292,7 +296,7 @@ Para probar los endpoints de MediaPipe con una imagen local:
 ```sh
 curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-box
 curl -o face-mesh.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-mesh
-curl -o eye-tracking.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/eye-tracking
+curl -D head-pose.headers -o head-pose.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/head-pose
 curl -o hands.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/hands
 ```
 
@@ -320,8 +324,9 @@ Estado auditado:
   un JPEG con cajas faciales.
 - Endpoint de malla facial disponible en `/api/mediapipe/face-mesh` y devuelve
   un JPEG con landmarks faciales.
-- Endpoint de eye tracking disponible en `/api/mediapipe/eye-tracking` y
-  devuelve un JPEG con puntos de iris.
+- Endpoint de pose de cabeza disponible en `/api/mediapipe/head-pose` y devuelve
+  un JPEG con ejes 3D semitransparentes y la cabecera
+  `X-Head-Pose-Direction`.
 - Endpoint de manos disponible en `/api/mediapipe/hands` y devuelve un JPEG con
   landmarks y conexiones de manos.
 - Endpoint `/api/motion` disponible para recibir frames multipart en el campo
@@ -342,7 +347,8 @@ Estado auditado:
   con rectángulos rojos sobre las áreas de movimiento relevantes.
 - Cámara disponible desde el componente Angular cuando el navegador concede permiso.
 - Visualización del vídeo original junto a las imágenes procesadas.
-- Página `/face-detection` disponible con secciones Box, Mesh y Eye Tracking en vivo.
+- Página `/face-detection` disponible con secciones Box, Mesh y Pose en vivo,
+  preparada como grid 2x2 para una futura vista de análisis emocional.
 - Página `/hand-detection` disponible con comparación Original y Landmarks en vivo.
 - Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
