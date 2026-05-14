@@ -218,9 +218,9 @@ def get_head_pose_label(horizontal_delta, vertical_delta, width, height):
     horizontal_label = "Center"
     vertical_label = ""
     if horizontal_offset < -0.06:
-        horizontal_label = "Left"
-    elif horizontal_offset > 0.06:
         horizontal_label = "Right"
+    elif horizontal_offset > 0.06:
+        horizontal_label = "Left"
     if vertical_offset < -0.06:
         vertical_label = " Up"
     elif vertical_offset > 0.06:

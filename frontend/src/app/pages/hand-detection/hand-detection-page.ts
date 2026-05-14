@@ -15,11 +15,9 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
   @ViewChild('canvasElement')
   canvasElement!: ElementRef<HTMLCanvasElement>;
 
-  originalFrameUrl = signal('');
   handLandmarksFrameUrl = signal('');
   cameraError = signal('');
 
-  private latestOriginalFrameUrl = '';
   private latestHandLandmarksFrameUrl = '';
   private captureIntervalId?: ReturnType<typeof setInterval>;
   private isCapturingFrame = false;
@@ -68,14 +66,11 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
       }
       try {
         const handLandmarksFrame = await this.apiService.detectHands(blob);
-        const nextOriginalFrameUrl = URL.createObjectURL(blob);
         const nextHandLandmarksFrameUrl = URL.createObjectURL(handLandmarksFrame);
 
         this.revokeLatestFrameUrls();
 
-        this.latestOriginalFrameUrl = nextOriginalFrameUrl;
         this.latestHandLandmarksFrameUrl = nextHandLandmarksFrameUrl;
-        this.originalFrameUrl.set(nextOriginalFrameUrl);
         this.handLandmarksFrameUrl.set(nextHandLandmarksFrameUrl);
       } catch (error) {
         console.error('Error processing hand detection frame: ', error);
@@ -95,7 +90,6 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
 
   private revokeLatestFrameUrls() {
     [
-      this.latestOriginalFrameUrl,
       this.latestHandLandmarksFrameUrl,
     ].forEach((frameUrl) => {
       if (frameUrl) {

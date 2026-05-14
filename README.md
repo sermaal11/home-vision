@@ -351,7 +351,7 @@ Estado auditado:
 - Visualización del vídeo original junto a las imágenes procesadas.
 - Página `/face-detection` disponible con secciones Box, Mesh y Pose en vivo,
   preparada como grid 2x2 para una futura vista de análisis emocional.
-- Página `/hand-detection` disponible con comparación Original y Landmarks en vivo.
+- Página `/hand-detection` disponible con visualización de Landmarks en vivo.
 - Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
 

@@ -11,8 +11,8 @@
 		</h2>
 
 		<p class="max-w-3xl text-sm leading-6 text-zinc-400">
-			Captura frames desde la cámara y compara el frame original con los
-			landmarks de manos procesados por MediaPipe.
+			Captura frames desde la cámara y muestra los landmarks de manos procesados
+			por MediaPipe.
 		</p>
 
 	</div>
@@ -24,8 +24,8 @@
 				Hand Landmarks
 			</h3>
 			<p class="text-sm leading-6 text-zinc-400">
-				Comparación en vivo entre el frame capturado y la detección de manos con
-				landmarks y conexiones dibujadas.
+				Visualización en vivo de la detección de manos con landmarks y conexiones
+				dibujadas sobre el frame procesado.
 			</p>
 		</div>
 
@@ -69,32 +69,7 @@
 			{{ cameraError() }}
 		</p>
 
-		<div class="grid gap-4 md:grid-cols-2">
-
-			<div class="space-y-2">
-				<h4 class="text-sm font-medium text-zinc-300">
-					Original
-				</h4>
-				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
-					<img
-						*ngIf="originalFrameUrl(); else originalPlaceholder"
-						[src]="originalFrameUrl()"
-						alt="Frame original capturado por la cámara"
-						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
-					/>
-					<ng-template #originalPlaceholder>
-						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
-							Esperando cámara
-						</div>
-					</ng-template>
-					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
-						<p class="text-sm leading-6 text-zinc-100">
-							Frame real capturado por la cámara. Es la referencia que se envía a
-							MediaPipe para calcular landmarks y conexiones de manos.
-						</p>
-					</div>
-				</div>
-			</div>
+		<div class="grid gap-4">
 
 			<div class="space-y-2">
 				<h4 class="text-sm font-medium text-zinc-300">
