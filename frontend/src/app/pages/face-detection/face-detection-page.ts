@@ -15,12 +15,10 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
   @ViewChild('canvasElement')
   canvasElement!: ElementRef<HTMLCanvasElement>;
 
-  originalFrameUrl = signal('');
   faceBoxFrameUrl = signal('');
   faceMeshFrameUrl = signal('');
   cameraError = signal('');
 
-  private latestOriginalFrameUrl = '';
   private latestFaceBoxFrameUrl = '';
   private latestFaceMeshFrameUrl = '';
   private captureIntervalId?: ReturnType<typeof setInterval>;
@@ -73,16 +71,13 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
           this.apiService.detectFaces(blob),
           this.apiService.detectFaceMesh(blob),
         ]);
-        const nextOriginalFrameUrl = URL.createObjectURL(blob);
         const nextFaceBoxFrameUrl = URL.createObjectURL(faceBoxFrame);
         const nextFaceMeshFrameUrl = URL.createObjectURL(faceMeshFrame);
 
         this.revokeLatestFrameUrls();
 
-        this.latestOriginalFrameUrl = nextOriginalFrameUrl;
         this.latestFaceBoxFrameUrl = nextFaceBoxFrameUrl;
         this.latestFaceMeshFrameUrl = nextFaceMeshFrameUrl;
-        this.originalFrameUrl.set(nextOriginalFrameUrl);
         this.faceBoxFrameUrl.set(nextFaceBoxFrameUrl);
         this.faceMeshFrameUrl.set(nextFaceMeshFrameUrl);
       } catch (error) {
@@ -103,7 +98,6 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
 
   private revokeLatestFrameUrls() {
     [
-      this.latestOriginalFrameUrl,
       this.latestFaceBoxFrameUrl,
       this.latestFaceMeshFrameUrl,
     ].forEach((frameUrl) => {
