@@ -9,6 +9,7 @@ from app.services.face_service import (
     detect_faces,
     draw_face_boxes,
     draw_face_mesh,
+    draw_eye_tracking
 )
 
 router = APIRouter()
@@ -44,6 +45,26 @@ async def face_mesh(frame: UploadFile = File(...)):
         )
     results = detect_face_mesh(decoded_frame)
     face_frame = draw_face_mesh(
+        decoded_frame,
+        results
+    )
+    encoded_frame = encode_frame(face_frame)
+    return Response(
+        encoded_frame,
+        media_type="image/jpeg"
+    )
+
+@router.post("/mediapipe/eye-tracking")
+async def eye_tracking(frame: UploadFile = File(...)):
+    content = await frame.read()
+    decoded_frame = decode_frame(content)
+    if decoded_frame is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image frame"
+        )
+    results = detect_face_mesh(decoded_frame)
+    face_frame = draw_eye_tracking(
         decoded_frame,
         results
     )

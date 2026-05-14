@@ -97,4 +97,47 @@
 
 	</section>
 
+	<section class="space-y-4 border-t border-zinc-800 pt-8">
+
+		<div class="space-y-1">
+			<h3 class="text-xl font-semibold text-white">
+				Eye Tracking
+			</h3>
+			<p class="max-w-3xl text-sm leading-6 text-zinc-400">
+				Espacio preparado para visualizar la orientación de la mirada a partir
+				de landmarks faciales y referencias de ojos.
+			</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-2">
+
+			<div class="space-y-2">
+				<h4 class="text-sm font-medium text-zinc-300">
+					Gaze
+				</h4>
+				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+					<img
+						*ngIf="eyeTrackingFrameUrl(); else eyeTrackingPlaceholder"
+						[src]="eyeTrackingFrameUrl()"
+						alt="Frame con puntos de eye tracking de MediaPipe"
+						class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+					/>
+					<ng-template #eyeTrackingPlaceholder>
+						<div class="flex aspect-video w-full items-center justify-center text-sm text-zinc-500">
+							Esperando eye tracking
+						</div>
+					</ng-template>
+					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+						<p class="text-sm leading-6 text-zinc-100">
+							Este panel podrá mostrar dirección de mirada, puntos de referencia
+							en ojos o vectores calculados a partir de Face Mesh.
+						</p>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+	</section>
+
 </section>

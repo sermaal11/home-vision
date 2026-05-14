@@ -17,10 +17,12 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
 
   faceBoxFrameUrl = signal('');
   faceMeshFrameUrl = signal('');
+  eyeTrackingFrameUrl = signal('');
   cameraError = signal('');
 
   private latestFaceBoxFrameUrl = '';
   private latestFaceMeshFrameUrl = '';
+  private latestEyeTrackingFrameUrl = '';
   private captureIntervalId?: ReturnType<typeof setInterval>;
   private isCapturingFrame = false;
   private stream?: MediaStream;
@@ -67,19 +69,23 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         return;
       }
       try {
-        const [faceBoxFrame, faceMeshFrame] = await Promise.all([
+        const [faceBoxFrame, faceMeshFrame, eyeTrackingFrame] = await Promise.all([
           this.apiService.detectFaces(blob),
           this.apiService.detectFaceMesh(blob),
+          this.apiService.detectEyeTracking(blob),
         ]);
         const nextFaceBoxFrameUrl = URL.createObjectURL(faceBoxFrame);
         const nextFaceMeshFrameUrl = URL.createObjectURL(faceMeshFrame);
+        const nextEyeTrackingFrameUrl = URL.createObjectURL(eyeTrackingFrame);
 
         this.revokeLatestFrameUrls();
 
         this.latestFaceBoxFrameUrl = nextFaceBoxFrameUrl;
         this.latestFaceMeshFrameUrl = nextFaceMeshFrameUrl;
+        this.latestEyeTrackingFrameUrl = nextEyeTrackingFrameUrl;
         this.faceBoxFrameUrl.set(nextFaceBoxFrameUrl);
         this.faceMeshFrameUrl.set(nextFaceMeshFrameUrl);
+        this.eyeTrackingFrameUrl.set(nextEyeTrackingFrameUrl);
       } catch (error) {
         console.error('Error processing face detection frame: ', error);
       } finally {
@@ -100,6 +106,7 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
     [
       this.latestFaceBoxFrameUrl,
       this.latestFaceMeshFrameUrl,
+      this.latestEyeTrackingFrameUrl,
     ].forEach((frameUrl) => {
       if (frameUrl) {
         URL.revokeObjectURL(frameUrl);

@@ -21,6 +21,9 @@ face_mesh = mp_face_mesh.FaceMesh(
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 
+LEFT_IRIS = [468]
+RIGHT_IRIS = [473]
+
 def face_status():
     return {
         "mediapipe_loaded": face_detection is not None
@@ -80,4 +83,22 @@ def draw_face_mesh(frame, results):
             connection_drawing_spec=mp_drawing_styles
                 .get_default_face_mesh_tesselation_style()
         )
+    return frame
+
+def draw_eye_tracking(frame, results):
+    if not results.multi_face_landmarks:
+        return frame
+    height, width, _ = frame.shape
+    for face_landmarks in results.multi_face_landmarks:
+        for iris_index in LEFT_IRIS + RIGHT_IRIS:
+            landmark = face_landmarks.landmark[iris_index]
+            x = int(landmark.x * width)
+            y = int(landmark.y * height)
+            cv2.circle(
+                frame,
+                (x, y),
+                5,
+                (0, 255, 255),
+                -1
+            )
     return frame
