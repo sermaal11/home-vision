@@ -112,9 +112,14 @@
 		<div class="grid gap-4 md:grid-cols-2">
 
 			<div class="space-y-2">
-				<h4 class="text-sm font-medium text-zinc-300">
-					Gaze
-				</h4>
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<h4 class="text-sm font-medium text-zinc-300">
+						Gaze
+					</h4>
+					<span class="rounded-md bg-emerald-400 px-2 py-1 text-xs font-semibold text-zinc-950">
+						Mirada: {{ eyeTrackingDirection() }}
+					</span>
+				</div>
 				<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
 					<img
 						*ngIf="eyeTrackingFrameUrl(); else eyeTrackingPlaceholder"

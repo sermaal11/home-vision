@@ -64,12 +64,15 @@ async def eye_tracking(frame: UploadFile = File(...)):
             detail="Invalid image frame"
         )
     results = detect_face_mesh(decoded_frame)
-    face_frame = draw_eye_tracking(
+    face_frame, gaze_direction = draw_eye_tracking(
         decoded_frame,
         results
     )
     encoded_frame = encode_frame(face_frame)
     return Response(
         encoded_frame,
-        media_type="image/jpeg"
+        media_type="image/jpeg",
+        headers={
+            "X-Gaze-Direction": gaze_direction
+        }
     )

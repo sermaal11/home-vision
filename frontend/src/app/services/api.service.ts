@@ -171,7 +171,10 @@ export class ApiService {
 		if (!response.ok) {
 			throw new Error(`Mediapipe eye tracking request failed: ${response.status}`);
 		}
-		return await response.blob();
+		return {
+			blob: await response.blob(),
+			gazeDirection: response.headers.get("X-Gaze-Direction") ?? "Unknown",
+		};
 	}
 
 	async detectHands(blob: Blob) {

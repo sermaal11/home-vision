@@ -23,6 +23,10 @@ mp_drawing_styles = mp.solutions.drawing_styles
 
 LEFT_IRIS = [468]
 RIGHT_IRIS = [473]
+LEFT_EYE_HORIZONTAL = (33, 133)
+LEFT_EYE_VERTICAL = (159, 145)
+RIGHT_EYE_HORIZONTAL = (362, 263)
+RIGHT_EYE_VERTICAL = (386, 374)
 
 def face_status():
     return {
@@ -87,13 +91,18 @@ def draw_face_mesh(frame, results):
 
 def draw_eye_tracking(frame, results):
     if not results.multi_face_landmarks:
-        return frame
+        return frame, "Unknown"
     height, width, _ = frame.shape
+    gaze_label = "Unknown"
     for face_landmarks in results.multi_face_landmarks:
-        for iris_index in LEFT_IRIS + RIGHT_IRIS:
-            landmark = face_landmarks.landmark[iris_index]
-            x = int(landmark.x * width)
-            y = int(landmark.y * height)
+        gaze_ratios = []
+        for iris_index, horizontal_eye, vertical_eye in [
+            (LEFT_IRIS[0], LEFT_EYE_HORIZONTAL, LEFT_EYE_VERTICAL),
+            (RIGHT_IRIS[0], RIGHT_EYE_HORIZONTAL, RIGHT_EYE_VERTICAL),
+        ]:
+            iris = face_landmarks.landmark[iris_index]
+            x = int(iris.x * width)
+            y = int(iris.y * height)
             cv2.circle(
                 frame,
                 (x, y),
@@ -101,4 +110,54 @@ def draw_eye_tracking(frame, results):
                 (0, 255, 255),
                 -1
             )
-    return frame
+            horizontal_ratio = get_landmark_ratio(
+                face_landmarks,
+                iris_index,
+                horizontal_eye[0],
+                horizontal_eye[1],
+                "x"
+            )
+            vertical_ratio = get_landmark_ratio(
+                face_landmarks,
+                iris_index,
+                vertical_eye[0],
+                vertical_eye[1],
+                "y"
+            )
+            gaze_ratios.append((horizontal_ratio, vertical_ratio))
+        gaze_label = get_gaze_label(gaze_ratios)
+        cv2.putText(
+            frame,
+            f"Gaze: {gaze_label}",
+            (20, 40),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            (0, 255, 255),
+            2
+        )
+    return frame, gaze_label
+
+def get_landmark_ratio(face_landmarks, target_index, start_index, end_index, axis):
+    landmarks = face_landmarks.landmark
+    target = getattr(landmarks[target_index], axis)
+    start = getattr(landmarks[start_index], axis)
+    end = getattr(landmarks[end_index], axis)
+    span = end - start
+    if abs(span) < 0.0001:
+        return 0.5
+    return (target - start) / span
+
+def get_gaze_label(gaze_ratios):
+    horizontal_ratio = sum(ratio[0] for ratio in gaze_ratios) / len(gaze_ratios)
+    vertical_ratio = sum(ratio[1] for ratio in gaze_ratios) / len(gaze_ratios)
+    horizontal_label = "Center"
+    vertical_label = ""
+    if horizontal_ratio < 0.42:
+        horizontal_label = "Left"
+    elif horizontal_ratio > 0.58:
+        horizontal_label = "Right"
+    if vertical_ratio < 0.35:
+        vertical_label = " Up"
+    elif vertical_ratio > 0.65:
+        vertical_label = " Down"
+    return f"{horizontal_label}{vertical_label}"

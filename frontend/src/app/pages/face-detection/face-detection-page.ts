@@ -18,6 +18,7 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
   faceBoxFrameUrl = signal('');
   faceMeshFrameUrl = signal('');
   eyeTrackingFrameUrl = signal('');
+  eyeTrackingDirection = signal('Unknown');
   cameraError = signal('');
 
   private latestFaceBoxFrameUrl = '';
@@ -76,7 +77,7 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         ]);
         const nextFaceBoxFrameUrl = URL.createObjectURL(faceBoxFrame);
         const nextFaceMeshFrameUrl = URL.createObjectURL(faceMeshFrame);
-        const nextEyeTrackingFrameUrl = URL.createObjectURL(eyeTrackingFrame);
+        const nextEyeTrackingFrameUrl = URL.createObjectURL(eyeTrackingFrame.blob);
 
         this.revokeLatestFrameUrls();
 
@@ -86,6 +87,7 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         this.faceBoxFrameUrl.set(nextFaceBoxFrameUrl);
         this.faceMeshFrameUrl.set(nextFaceMeshFrameUrl);
         this.eyeTrackingFrameUrl.set(nextEyeTrackingFrameUrl);
+        this.eyeTrackingDirection.set(this.getSpanishGazeDirection(eyeTrackingFrame.gazeDirection));
       } catch (error) {
         console.error('Error processing face detection frame: ', error);
       } finally {
@@ -112,5 +114,21 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         URL.revokeObjectURL(frameUrl);
       }
     });
+  }
+
+  private getSpanishGazeDirection(gazeDirection: string) {
+    const directions: Record<string, string> = {
+      'Center': 'Centro',
+      'Left': 'Izquierda',
+      'Right': 'Derecha',
+      'Center Up': 'Centro arriba',
+      'Center Down': 'Centro abajo',
+      'Left Up': 'Izquierda arriba',
+      'Left Down': 'Izquierda abajo',
+      'Right Up': 'Derecha arriba',
+      'Right Down': 'Derecha abajo',
+      'Unknown': 'Sin detección',
+    };
+    return directions[gazeDirection] ?? gazeDirection;
   }
 }
