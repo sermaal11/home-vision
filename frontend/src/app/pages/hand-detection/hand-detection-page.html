@@ -1,0 +1,50 @@
+<section class="space-y-8">
+
+	<div class="space-y-2">
+
+		<p class="text-sm font-medium uppercase text-emerald-400">
+			Detección visual
+		</p>
+
+		<h2 class="text-3xl font-semibold text-white">
+			Hand Detection
+		</h2>
+
+		<p class="max-w-3xl text-sm leading-6 text-zinc-400">
+			Página preparada para añadir detección de manos con cámara en vivo y
+			procesamiento MediaPipe.
+		</p>
+
+	</div>
+
+	<section class="grid gap-4 md:grid-cols-2">
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+			<h3 class="text-lg font-semibold text-white">
+				Entrada de cámara
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				Este espacio queda reservado para mostrar el frame original capturado
+				desde el navegador.
+			</p>
+			<div class="mt-4 flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-zinc-700 bg-zinc-950 text-sm text-zinc-500">
+				Esperando cámara
+			</div>
+		</article>
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+			<h3 class="text-lg font-semibold text-white">
+				Detección de manos
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				Aquí se podrá renderizar el resultado procesado con landmarks, conexiones
+				o cajas de detección sobre la mano.
+			</p>
+			<div class="mt-4 flex aspect-video w-full items-center justify-center rounded-lg border border-dashed border-emerald-500/40 bg-emerald-500/10 text-sm text-emerald-100">
+				Esperando detección
+			</div>
+		</article>
+
+	</section>
+
+</section>
