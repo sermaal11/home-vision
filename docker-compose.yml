@@ -4,32 +4,20 @@ services:
     build:
       context: ./frontend
     container_name: home-vision-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm start -- --host 0.0.0.0"
 
   backend:
     build:
       context: ./backend
     container_name: home-vision-backend
-    working_dir: /app
-    volumes:
-      - ./backend:/app
     ports:
       - "8000:8000"
-    command: sh -c "pip install -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --reload"
 
   nginx:
-    image: nginx:latest
+    build:
+      context: ./docker/nginx
     container_name: home-vision-nginx
     ports:
       - "8443:443"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - ./docker/nginx/certs/nginx.crt:/etc/nginx/certs/nginx.crt
-      - ./docker/nginx/certs/nginx.key:/etc/nginx/certs/nginx.key
-
     depends_on:
       - frontend
       - backend
