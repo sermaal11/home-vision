@@ -23,6 +23,192 @@
 		ocurre en esa etapa del proceso.
 	</div>
 
-	<app-motion-detection />
+	<div class="grid gap-4 md:grid-cols-2">
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				1. Original
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<video
+					#videoElement
+					autoplay
+					playsinline
+					muted
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25">
+				</video>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						Frame real capturado por la cámara. Es la referencia visual que inicia
+						todo el proceso.
+					</p>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				2. Greyscale
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="grayscaleFrameUrl()"
+					[src]="grayscaleFrameUrl()"
+					alt="Grayscale frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						Se elimina el color para trabajar solo con intensidad. Esto simplifica
+						los cálculos y reduce ruido innecesario.
+					</p>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				3. Blur
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="blurFrameUrl()"
+					[src]="blurFrameUrl()"
+					alt="Blurred frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						El desenfoque suaviza pequeños cambios de píxeles para que la detección
+						no reaccione tanto a grano, compresión o variaciones mínimas de luz.
+					</p>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				4. Difference
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="differenceFrameUrl()"
+					[src]="differenceFrameUrl()"
+					alt="Difference frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						Se compara el frame actual con el anterior. Las zonas claras indican
+						píxeles que han cambiado y podrían ser movimiento.
+					</p>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				5. Thresholding
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="thresholdFrameUrl()"
+					[src]="thresholdFrameUrl()"
+					alt="Threshold frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						El umbral convierte la diferencia en blanco o negro: blanco si el cambio
+						supera el mínimo configurado, negro si se ignora.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				6. Contours
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="contoursFrameUrl()"
+					[src]="contoursFrameUrl()"
+					alt="Contours frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						OpenCV agrupa las manchas blancas en contornos. Así pasamos de píxeles
+						sueltos a regiones candidatas de movimiento.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				7. Motion Boxes
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="motionBoxesFrameUrl()"
+					[src]="motionBoxesFrameUrl()"
+					alt="Motion Boxes frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						Los contornos pequeños se descartan y los relevantes se resumen en
+						rectángulos rojos. Esto marca dónde hay movimiento útil.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="space-y-2">
+
+			<h2 class="text-sm font-medium text-zinc-300">
+				8. Motion Overlay
+			</h2>
+
+			<div class="group relative overflow-hidden rounded-lg border border-zinc-700 bg-zinc-900">
+				<img
+					*ngIf="motionOverlayFrameUrl()"
+					[src]="motionOverlayFrameUrl()"
+					alt="Motion Overlay frame"
+					class="aspect-video w-full object-cover transition duration-200 group-hover:opacity-25"
+				/>
+				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
+					<p class="text-sm leading-6 text-zinc-100">
+						Resultado final: las cajas calculadas con la diferencia se dibujan sobre
+						el frame real para entender qué objeto o zona se está moviendo.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<canvas #canvasElement class="hidden">
+		</canvas>
+
+	</div>
 
 </section>

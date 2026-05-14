@@ -76,15 +76,9 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
         const nextOriginalFrameUrl = URL.createObjectURL(blob);
         const nextFaceBoxFrameUrl = URL.createObjectURL(faceBoxFrame);
         const nextFaceMeshFrameUrl = URL.createObjectURL(faceMeshFrame);
-        if (this.latestOriginalFrameUrl) {
-          URL.revokeObjectURL(this.latestOriginalFrameUrl);
-        }
-        if (this.latestFaceBoxFrameUrl) {
-          URL.revokeObjectURL(this.latestFaceBoxFrameUrl);
-        }
-        if (this.latestFaceMeshFrameUrl) {
-          URL.revokeObjectURL(this.latestFaceMeshFrameUrl);
-        }
+
+        this.revokeLatestFrameUrls();
+
         this.latestOriginalFrameUrl = nextOriginalFrameUrl;
         this.latestFaceBoxFrameUrl = nextFaceBoxFrameUrl;
         this.latestFaceMeshFrameUrl = nextFaceMeshFrameUrl;
@@ -104,14 +98,18 @@ export class FaceDetectionPage implements AfterViewInit, OnDestroy {
       clearInterval(this.captureIntervalId);
     }
     this.stream?.getTracks().forEach((track) => track.stop());
-    if (this.latestOriginalFrameUrl) {
-      URL.revokeObjectURL(this.latestOriginalFrameUrl);
-    }
-    if (this.latestFaceBoxFrameUrl) {
-      URL.revokeObjectURL(this.latestFaceBoxFrameUrl);
-    }
-    if (this.latestFaceMeshFrameUrl) {
-      URL.revokeObjectURL(this.latestFaceMeshFrameUrl);
-    }
+    this.revokeLatestFrameUrls();
+  }
+
+  private revokeLatestFrameUrls() {
+    [
+      this.latestOriginalFrameUrl,
+      this.latestFaceBoxFrameUrl,
+      this.latestFaceMeshFrameUrl,
+    ].forEach((frameUrl) => {
+      if (frameUrl) {
+        URL.revokeObjectURL(frameUrl);
+      }
+    });
   }
 }
