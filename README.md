@@ -108,6 +108,9 @@ varias rutas bajo el prefijo `/api`:
 - `POST /api/mediapipe/hands`: recibe un archivo multipart en el campo `frame`,
   ejecuta MediaPipe Hands y devuelve un JPEG con landmarks y conexiones de manos
   dibujados cuando se detectan manos.
+- `POST /api/mediapipe/hands/finger-counter`: recibe un archivo multipart en el
+  campo `frame`, ejecuta MediaPipe Hands, dibuja landmarks con el conteo por
+  mano y devuelve el total en la cabecera `X-Finger-Count`.
 - `POST /api/motion`: recibe un archivo multipart en el campo `frame`, decodifica
   el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
 - `POST /api/motion/grayscale`: recibe el mismo formato de frame, lo transforma
@@ -160,7 +163,9 @@ capturan frames desde la cámara y enseñan el JPEG procesado por MediaPipe:
 dibuja la malla de landmarks faciales, `/api/mediapipe/head-pose` estima la
 pose de cabeza con Face Mesh y `solvePnP`, dibuja ejes 3D semitransparentes y
 devuelve la dirección en `X-Head-Pose-Direction`, y `/api/mediapipe/hands`
-dibuja landmarks y conexiones de manos. El layout global en
+dibuja landmarks y conexiones de manos. `/api/mediapipe/hands/finger-counter`
+añade una vista de conteo de dedos y devuelve el total en `X-Finger-Count`. El
+layout global en
 `frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
 estado del backend.
 
@@ -234,6 +239,7 @@ URLs principales:
 - Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
 - Pose de cabeza MediaPipe: `http://localhost:8000/api/mediapipe/head-pose`
 - Detección de manos MediaPipe: `http://localhost:8000/api/mediapipe/hands`
+- Conteo de dedos MediaPipe: `http://localhost:8000/api/mediapipe/hands/finger-counter`
 - Frontend Angular: `http://localhost:4200/`
 
 Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
@@ -300,6 +306,7 @@ curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/med
 curl -o face-mesh.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-mesh
 curl -D head-pose.headers -o head-pose.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/head-pose
 curl -o hands.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/hands
+curl -D finger-count.headers -o finger-count.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/hands/finger-counter
 ```
 
 ## Pruebas y validación
@@ -331,6 +338,9 @@ Estado auditado:
   `X-Head-Pose-Direction`.
 - Endpoint de manos disponible en `/api/mediapipe/hands` y devuelve un JPEG con
   landmarks y conexiones de manos.
+- Endpoint de conteo de dedos disponible en
+  `/api/mediapipe/hands/finger-counter` y devuelve un JPEG con la cabecera
+  `X-Finger-Count`.
 - Endpoint `/api/motion` disponible para recibir frames multipart en el campo
   `frame` y devolver un JPEG.
 - Endpoint `/api/motion/grayscale` disponible para devolver un JPEG procesado en
@@ -351,7 +361,8 @@ Estado auditado:
 - Visualización del vídeo original junto a las imágenes procesadas.
 - Página `/face-detection` disponible con secciones Box, Mesh y Pose en vivo,
   preparada como grid 2x2 para una futura vista de análisis emocional.
-- Página `/hand-detection` disponible con visualización de Landmarks en vivo.
+- Página `/hand-detection` disponible con visualizaciones de Landmarks y Finger
+  Count en vivo.
 - Panel de salud del backend disponible en la Home.
 - No existe todavía una suite de pruebas backend.
 

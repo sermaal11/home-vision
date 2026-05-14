@@ -189,4 +189,20 @@ export class ApiService {
 			direction: response.headers.get("X-Head-Pose-Direction") ?? "Unknown",
 		};
 	}
+
+	async countFingers(blob: Blob) {
+		const formData = new FormData();
+		formData.append("frame", blob, "frame.jpg");
+		const response = await fetch(API_CONFIG.mediapipeHandsFingerCounter, {
+			method: "POST",
+			body: formData,
+		});
+		if (!response.ok) {
+			throw new Error(`Mediapipe hand finger count request failed: ${response.status}`);
+		}
+		return {
+			blob: await response.blob(),
+			total: Number(response.headers.get("X-Finger-Count") ?? 0),
+		};
+	}
 }

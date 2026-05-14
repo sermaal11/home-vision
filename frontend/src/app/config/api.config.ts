@@ -14,4 +14,5 @@ export const API_CONFIG = {
 	mediapipeFaceMesh: '/api/mediapipe/face-mesh',
 	mediapipeFacePose: '/api/mediapipe/head-pose',
 	mediapipeHands: '/api/mediapipe/hands',
+	mediapipeHandsFingerCounter: '/api/mediapipe/hands/finger-counter',
 };

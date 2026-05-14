@@ -16,9 +16,12 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
   canvasElement!: ElementRef<HTMLCanvasElement>;
 
   handLandmarksFrameUrl = signal('');
+  fingerCountFrameUrl = signal('');
+  totalFingerCount = signal(0);
   cameraError = signal('');
 
   private latestHandLandmarksFrameUrl = '';
+  private latestFingerCountFrameUrl = '';
   private captureIntervalId?: ReturnType<typeof setInterval>;
   private isCapturingFrame = false;
   private stream?: MediaStream;
@@ -65,13 +68,20 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
         return;
       }
       try {
-        const handLandmarksFrame = await this.apiService.detectHands(blob);
+        const [handLandmarksFrame, fingerCountFrame] = await Promise.all([
+          this.apiService.detectHands(blob),
+          this.apiService.countFingers(blob),
+        ]);
         const nextHandLandmarksFrameUrl = URL.createObjectURL(handLandmarksFrame);
+        const nextFingerCountFrameUrl = URL.createObjectURL(fingerCountFrame.blob);
 
         this.revokeLatestFrameUrls();
 
         this.latestHandLandmarksFrameUrl = nextHandLandmarksFrameUrl;
+        this.latestFingerCountFrameUrl = nextFingerCountFrameUrl;
         this.handLandmarksFrameUrl.set(nextHandLandmarksFrameUrl);
+        this.fingerCountFrameUrl.set(nextFingerCountFrameUrl);
+        this.totalFingerCount.set(fingerCountFrame.total);
       } catch (error) {
         console.error('Error processing hand detection frame: ', error);
       } finally {
@@ -91,6 +101,7 @@ export class HandDetectionPage implements AfterViewInit, OnDestroy {
   private revokeLatestFrameUrls() {
     [
       this.latestHandLandmarksFrameUrl,
+      this.latestFingerCountFrameUrl,
     ].forEach((frameUrl) => {
       if (frameUrl) {
         URL.revokeObjectURL(frameUrl);
