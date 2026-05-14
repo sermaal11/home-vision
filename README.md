@@ -1,37 +1,64 @@
 # Home Vision
 
-Home Vision es un proyecto personal nacido de la motivación propia por
-aprender, experimentar y explorar conocimientos en arquitectura web y visión
-doméstica. La implementación actual integra una API REST mínima con FastAPI,
-una interfaz Angular con acceso a cámara del navegador, validaciones de salud
-para los módulos de visión y una capa de orquestación con Docker Compose y
-Nginx sobre HTTPS local.
+Home Vision es un laboratorio local de vision por computador construido con
+FastAPI, Angular, OpenCV y MediaPipe. El objetivo del proyecto es mostrar, de
+forma visual y pedagogica, como una aplicacion web puede capturar frames desde
+la camara del navegador, enviarlos a un backend de procesamiento y devolver
+imagenes transformadas que ayudan a entender conceptos clasicos de vision por
+computador.
 
-## Objetivos del proyecto
+El repositorio combina una API REST, una interfaz Angular, procesamiento de
+imagen en Python y una capa de Nginx con HTTPS local para poder usar APIs de
+camara del navegador desde un origen seguro.
 
-- Diseñar una base modular para una aplicación de visión por computador.
-- Servir como laboratorio académico donde cada vista explique qué técnica se
-  está usando y qué concepto de visión por computador representa.
-- Separar responsabilidades entre backend, frontend y proxy HTTP.
-- Validar la comunicación entre Angular y FastAPI en entorno local.
-- Probar captura de vídeo desde el navegador como base para futuras funciones de visión.
-- Procesar frames en el backend con OpenCV y devolver vistas en escala de grises,
-  desenfoque, diferencia, umbralización, contornos, cajas de movimiento y
-  superposición sobre la imagen real.
-- Exponer visualizaciones de detección con MediaPipe, dibujar cajas faciales,
-  mallas faciales, pose de cabeza con ejes 3D sutiles y landmarks de manos
-  sobre frames capturados, y validar su carga desde endpoints de salud del
-  backend.
+## Objetivos
 
-## Tecnologías utilizadas
+- Servir como proyecto academico para aprender vision por computador desde una
+  interfaz web.
+- Separar claramente captura, transporte, procesamiento y visualizacion.
+- Mostrar el pipeline completo de deteccion de movimiento con OpenCV.
+- Mostrar deteccion facial, malla facial, pose de cabeza, landmarks de manos y
+  conteo de dedos con MediaPipe.
+- Documentar los endpoints y los conceptos tecnicos para que el proyecto pueda
+  leerse como material de estudio.
 
-| Área | Tecnología |
-| --- | --- |
-| Backend | Python 3.12, FastAPI, Uvicorn, Pydantic, python-multipart, OpenCV headless, NumPy, MediaPipe |
-| Frontend | Angular 21, Angular Router, TypeScript, Tailwind CSS, Vitest |
-| Infraestructura | Docker, Docker Compose, Nginx |
+## Stack
 
-## Estructura del repositorio
+| Area | Tecnologia | Uso |
+| --- | --- | --- |
+| Backend | Python 3.12, FastAPI, Uvicorn | API REST y orquestacion de rutas |
+| Vision | OpenCV headless, NumPy | Procesamiento de frames, diferencias, umbrales, contornos y dibujos |
+| Modelos | MediaPipe | Face Detection, Face Mesh y Hands |
+| Frontend | Angular 21, TypeScript, Tailwind CSS | Captura de camara, UI didactica y visualizacion de blobs |
+| Testing | Vitest, Angular test runner | Pruebas del shell principal de frontend |
+| Infraestructura | Docker Compose, Nginx | Servicios locales y proxy HTTPS |
+
+## Arquitectura
+
+```text
+Navegador
+  |
+  | getUserMedia + canvas hidden
+  v
+Angular frontend
+  |
+  | multipart/form-data con campo frame
+  v
+FastAPI backend
+  |
+  | OpenCV / MediaPipe
+  v
+Respuesta image/jpeg (+ headers cuando aplica)
+  |
+  v
+Angular muestra la imagen procesada como Blob URL
+```
+
+El frontend usa rutas relativas `/api/...`. En Docker, Nginx sirve el frontend
+y reenvia `/api/` al backend, por lo que la aplicacion funciona desde el mismo
+origen publico y no necesita CORS para el flujo normal.
+
+## Estructura Del Repositorio
 
 ```text
 .
@@ -65,17 +92,9 @@ Nginx sobre HTTPS local.
 │       ├── config/api.config.ts
 │       ├── pages/
 │       │   ├── face-detection/
-│       │   │   ├── face-detection-page.html
-│       │   │   └── face-detection-page.ts
 │       │   ├── hand-detection/
-│       │   │   ├── hand-detection-page.html
-│       │   │   └── hand-detection-page.ts
-│       │   ├── motion-detection/
-│       │   │   ├── motion-detection-page.html
-│       │   │   └── motion-detection-page.ts
-│       │   └── home/
-│       │       ├── home.html
-│       │       └── home.ts
+│       │   ├── home/
+│       │   └── motion-detection/
 │       ├── services/api.service.ts
 │       └── app.*
 ├── docker-compose.yml
@@ -83,121 +102,169 @@ Nginx sobre HTTPS local.
 └── README.md
 ```
 
-## Funcionamiento actual
+## Paginas Del Frontend
 
-El backend define una aplicación FastAPI en `backend/app/main.py` y expone
-varias rutas bajo el prefijo `/api`:
+### Home
 
-- `GET /api/health`: delega en `backend/app/services/system_service.py` y
-  devuelve el estado básico del sistema.
-- `GET /api/health/frame`: valida la carga del módulo de procesamiento de
-  frames y devuelve versiones de OpenCV y NumPy.
-- `GET /api/health/mediapipe`: valida que el detector facial de MediaPipe pueda
-  cargarse en el backend.
-- `POST /api/mediapipe/face-box`: recibe un archivo multipart en el campo `frame`,
-  ejecuta el detector facial de MediaPipe y devuelve un JPEG con la caja facial
-  dibujada cuando se detecta un rostro.
-- `POST /api/mediapipe/face-mesh`: recibe un archivo multipart en el campo
-  `frame`, ejecuta Face Mesh de MediaPipe y devuelve un JPEG con la malla facial
-  dibujada cuando se detectan landmarks.
-- `POST /api/mediapipe/head-pose`: recibe un archivo multipart en el campo
-  `frame`, ejecuta Face Mesh de MediaPipe, estima la orientación de la cabeza
-  con `cv2.solvePnP` y devuelve un JPEG con ejes 3D sutiles proyectados desde la
-  nariz. La respuesta incluye la cabecera `X-Head-Pose-Direction` con una
-  dirección textual como `Center`, `Left`, `Right`, `Center Up` o `Right Down`.
-- `POST /api/mediapipe/hands`: recibe un archivo multipart en el campo `frame`,
-  ejecuta MediaPipe Hands y devuelve un JPEG con landmarks y conexiones de manos
-  dibujados cuando se detectan manos.
-- `POST /api/mediapipe/hands/finger-counter`: recibe un archivo multipart en el
-  campo `frame`, ejecuta MediaPipe Hands, dibuja landmarks con el conteo por
-  mano y devuelve el total en la cabecera `X-Finger-Count`.
-- `POST /api/motion`: recibe un archivo multipart en el campo `frame`, decodifica
-  el JPEG con OpenCV y devuelve otro JPEG con `Content-Type: image/jpeg`.
-- `POST /api/motion/grayscale`: recibe el mismo formato de frame, lo transforma
-  a escala de grises y devuelve un JPEG procesado.
-- `POST /api/motion/blur`: recibe el mismo formato de frame, lo transforma a
-  escala de grises, aplica un desenfoque gaussiano y devuelve un JPEG procesado.
-- `POST /api/motion/difference`: recibe el mismo formato de frame, lo transforma
-  a escala de grises, aplica desenfoque y devuelve un JPEG con la diferencia
-  respecto al frame anterior procesado.
-- `POST /api/motion/threshold`: recibe un frame, lo transforma a escala de
-  grises, aplica un umbral binario y devuelve un JPEG procesado.
-- `POST /api/motion/contours`: recibe un frame, lo transforma a escala de
-  grises, aplica un umbral binario, detecta contornos externos y devuelve un
-  JPEG con los contornos dibujados en verde.
-- `POST /api/motion/motion-boxes`: recibe un frame, lo transforma a escala de
-  grises, aplica un umbral binario, detecta contornos externos y devuelve un
-  JPEG con rectángulos verdes alrededor de las áreas de movimiento relevantes.
-- `POST /api/motion/motion-overlay`: recibe dos archivos multipart, `frame` con
-  la imagen real y `difference` con la diferencia entre frames; usa la
-  diferencia para detectar contornos y devuelve el frame real con rectángulos
-  rojos sobre las áreas de movimiento relevantes.
+La Home presenta el proyecto como laboratorio de aprendizaje, muestra el stack
+principal y valida la salud del backend mediante:
 
-Respuesta actual de `GET /api/health`:
+- `/api/health`
+- `/api/health/frame`
+- `/api/health/mediapipe`
+
+Tambien incluye un mapa academico de los conceptos que aparecen en las paginas:
+OpenCV y NumPy, MediaPipe y geometria de camara.
+
+### Motion Detection
+
+La pagina `/motion-detection` conserva las 8 vistas del pipeline completo. Su
+valor didactico esta precisamente en ver cada etapa intermedia antes del
+resultado final:
+
+1. `Original`: frame capturado desde la camara.
+2. `Greyscale`: conversion a escala de grises.
+3. `Blur`: desenfoque gaussiano para reducir ruido.
+4. `Difference`: diferencia frente al frame anterior.
+5. `Thresholding`: mascara binaria de cambios relevantes.
+6. `Contours`: regiones conectadas sobre la mascara.
+7. `Motion Boxes`: cajas sobre regiones de movimiento.
+8. `Motion Overlay`: cajas de movimiento sobre el frame real.
+
+Conceptualmente, esta pagina enseña un pipeline clasico de vision por
+computador sin modelos de aprendizaje automatico: conversion de color,
+suavizado, diferencia temporal, segmentacion y extraccion de contornos.
+
+### Face Detection
+
+La pagina `/face-detection` muestra tres vistas en una grid de tres columnas en
+escritorio:
+
+- `Box`: deteccion facial con caja y confianza.
+- `Mesh`: landmarks y conexiones de Face Mesh.
+- `Pose`: estimacion de pose de cabeza con ejes 3D sutiles y direccion textual.
+
+Las tarjetas superiores explican conceptos generales, mientras que los hovers
+de cada imagen explican la vista concreta y el endpoint usado. La pose de
+cabeza usa landmarks estables de Face Mesh, un modelo 3D aproximado y
+`cv2.solvePnP`. La direccion estimada llega al frontend mediante la cabecera
+`X-Head-Pose-Direction`.
+
+### Hand Detection
+
+La pagina `/hand-detection` muestra dos vistas:
+
+- `Landmarks`: landmarks y conexiones de MediaPipe Hands.
+- `Finger Count`: imagen limpia con una etiqueta de dedos levantados, sin
+  landmarks repetidos, y un badge de total al lado del titulo.
+
+El conteo de dedos usa posiciones relativas de landmarks. Para indice, medio,
+anular y menique compara la punta del dedo con su articulacion PIP. Para el
+pulgar usa la lateralidad de MediaPipe Hands. El total llega al frontend con la
+cabecera `X-Finger-Count`.
+
+La vista de Finger Count funciona mejor con la palma abierta mirando hacia la
+camara, porque la heuristica depende de la posicion relativa de los dedos en la
+imagen.
+
+## Conceptos De Vision Por Computador
+
+### Frames Como Matrices
+
+Cada frame de video se transforma en una matriz de pixeles. OpenCV opera sobre
+esas matrices, normalmente apoyandose en NumPy. Una imagen no es tratada como
+un elemento visual abstracto, sino como datos numericos que pueden transformarse
+con operaciones matematicas.
+
+### Preprocesado
+
+La escala de grises reduce la imagen a intensidad luminica. El desenfoque
+gaussiano suaviza ruido, compresion y pequenas variaciones de luz. Estas etapas
+preparan el frame para que las siguientes operaciones sean mas estables.
+
+### Diferencia Temporal
+
+La deteccion de movimiento compara el frame actual con el anterior. Las zonas
+que cambian aparecen como regiones claras en la diferencia. Esta tecnica detecta
+cambio visual, no identidad de objetos.
+
+### Umbral Y Contornos
+
+El umbral convierte una imagen de diferencias en una mascara binaria. Los
+contornos agrupan pixeles conectados y permiten pasar de puntos sueltos a
+regiones interpretables, como cajas de movimiento.
+
+### Landmarks
+
+Un landmark es un punto clave predicho por un modelo. En Face Mesh representa
+rasgos faciales; en Hands representa partes de la mano. Los landmarks permiten
+medir distancias, relaciones geometricas y posturas.
+
+### Pose De Cabeza Con solvePnP
+
+`solvePnP` estima la posicion y orientacion de un objeto 3D a partir de puntos
+2D observados en una imagen. Home Vision lo usa con landmarks faciales y un
+modelo 3D aproximado de cabeza para proyectar ejes sobre el rostro y estimar
+si la cabeza mira al centro, a los lados, arriba o abajo.
+
+## Endpoints
+
+Todas las rutas de imagen aceptan `multipart/form-data`. Salvo que se indique
+otra cosa, el campo de archivo se llama `frame` y la respuesta es `image/jpeg`.
+
+### Salud
+
+| Metodo | Ruta | Descripcion |
+| --- | --- | --- |
+| GET | `/api/health` | Estado basico del backend |
+| GET | `/api/health/frame` | Carga de OpenCV y NumPy |
+| GET | `/api/health/mediapipe` | Carga de MediaPipe |
+
+Respuesta de `/api/health`:
 
 ```json
 {"status":"ok","message":"Home Vision Backend is running!"}
 ```
 
-Ejemplos de respuestas de salud de los módulos de visión:
+Ejemplo de `/api/health/frame`:
 
 ```json
 {"opencv_loaded":true,"numpy_loaded":true,"opencv_version":"4.11.0","numpy_version":"1.26.4"}
 ```
 
+Ejemplo de `/api/health/mediapipe`:
+
 ```json
 {"mediapipe_loaded":true}
 ```
 
-El frontend usa Angular Router con rutas definidas en
-`frontend/src/app/app.routes.ts`. La ruta `/` muestra una página de bienvenida
-con una versión condensada del propósito, arquitectura y flujo del proyecto,
-además de un panel pequeño de salud que consulta `/api/health`,
-`/api/health/frame` y `/api/health/mediapipe`. La ruta `/motion-detection`
-muestra la detección visual de movimiento directamente desde su page shell. La
-ruta antigua `/motion-lab` redirige a `/motion-detection` para mantener
-compatibilidad. La ruta `/face-detection` muestra las secciones Box, Mesh y
-Pose, y la ruta `/hand-detection` muestra landmarks de manos. Estas páginas
-capturan frames desde la cámara y enseñan el JPEG procesado por MediaPipe:
-`/api/mediapipe/face-box` dibuja cajas faciales, `/api/mediapipe/face-mesh`
-dibuja la malla de landmarks faciales, `/api/mediapipe/head-pose` estima la
-pose de cabeza con Face Mesh y `solvePnP`, dibuja ejes 3D semitransparentes y
-devuelve la dirección en `X-Head-Pose-Direction`, y `/api/mediapipe/hands`
-dibuja landmarks y conexiones de manos. `/api/mediapipe/hands/finger-counter`
-añade una vista de conteo de dedos y devuelve el total en `X-Finger-Count`. El
-layout global en
-`frontend/src/app/app.html` mantiene el encabezado, la navegación principal y el
-estado del backend.
+### Movimiento
 
-La aplicación consulta los endpoints de salud desde `ApiService` usando las
-rutas compartidas definidas en `frontend/src/app/config/api.config.ts`. El
-mensaje de `/api/health` se muestra en el encabezado global y el estado de los
-módulos se muestra en la Home.
+| Metodo | Ruta | Resultado |
+| --- | --- | --- |
+| POST | `/api/motion` | Frame decodificado y reemitido como JPEG |
+| POST | `/api/motion/grayscale` | Frame en escala de grises |
+| POST | `/api/motion/blur` | Escala de grises con desenfoque gaussiano |
+| POST | `/api/motion/difference` | Diferencia frente al frame anterior |
+| POST | `/api/motion/threshold` | Mascara binaria de diferencia |
+| POST | `/api/motion/contours` | Contornos externos dibujados |
+| POST | `/api/motion/motion-boxes` | Cajas sobre areas de movimiento |
+| POST | `/api/motion/motion-overlay` | Cajas de movimiento sobre el frame real |
 
-La página `MotionDetectionPage` usa `navigator.mediaDevices.getUserMedia` para
-pedir acceso a la cámara, mostrar el vídeo original en un elemento `<video>`,
-capturar frames en un `<canvas>` oculto y enviarlos al backend como
-`multipart/form-data` a los endpoints `/api/motion/grayscale`,
-`/api/motion/blur` y `/api/motion/difference`. La respuesta de diferencia se
-envía después a `/api/motion/threshold`, `/api/motion/contours` y
-`/api/motion/motion-boxes` para calcular la vista umbralizada, la vista con
-contornos y la vista con cajas de movimiento sobre esa misma diferencia. Para
-`/api/motion/motion-overlay`, envía el frame original en el campo `frame` y la
-diferencia en el campo `difference`, de modo que el backend dibuje las cajas
-sobre la imagen real. Las páginas `FaceDetectionPage` y `HandDetectionPage`
-siguen el mismo patrón de captura para enviar frames a sus endpoints de
-MediaPipe. Las respuestas se consumen como `Blob`, se convierten en URLs
-temporales y se muestran junto al vídeo original como vistas procesadas. Esta
-API requiere un contexto seguro en navegadores modernos, por eso Nginx se sirve
-por HTTPS local.
+`/api/motion/motion-overlay` recibe dos campos: `frame` con la imagen real y
+`difference` con la diferencia ya calculada.
 
-Cuando se accede por Nginx, el navegador llama a `/api/health` y a las rutas
-`/api/motion...` sobre el mismo origen (`https://localhost:8443` o
-`https://homelab:8443`) y Nginx reenvía esas peticiones al servicio backend.
-Como frontend y API se sirven desde el mismo origen público, el backend no
-necesita configurar CORS en este flujo.
+### MediaPipe
 
-## Ejecución local
+| Metodo | Ruta | Resultado |
+| --- | --- | --- |
+| POST | `/api/mediapipe/face-box` | Caja facial y confianza |
+| POST | `/api/mediapipe/face-mesh` | Malla facial de landmarks |
+| POST | `/api/mediapipe/head-pose` | Ejes 3D sutiles y header `X-Head-Pose-Direction` |
+| POST | `/api/mediapipe/hands` | Landmarks y conexiones de manos |
+| POST | `/api/mediapipe/hands/finger-counter` | Etiqueta de dedos levantados y header `X-Finger-Count` |
+
+## Ejecucion Local
 
 Backend:
 
@@ -219,35 +286,18 @@ npm start
 
 URLs principales:
 
-- Backend: `http://localhost:8000/api/health`
-- Salud de frames/OpenCV: `http://localhost:8000/api/health/frame`
-- Salud de MediaPipe: `http://localhost:8000/api/health/mediapipe`
-- Home frontend: `http://localhost:4200/`
-- Motion Detection frontend: `http://localhost:4200/motion-detection`
-- Redirección antigua de Motion Lab: `http://localhost:4200/motion-lab`
-- Face Detection frontend: `http://localhost:4200/face-detection`
-- Hand Detection frontend: `http://localhost:4200/hand-detection`
-- Recepción de frames: `http://localhost:8000/api/motion`
-- Procesado en escala de grises: `http://localhost:8000/api/motion/grayscale`
-- Procesado con desenfoque: `http://localhost:8000/api/motion/blur`
-- Procesado de diferencia entre frames: `http://localhost:8000/api/motion/difference`
-- Procesado con umbral binario: `http://localhost:8000/api/motion/threshold`
-- Procesado con detección de contornos: `http://localhost:8000/api/motion/contours`
-- Procesado con cajas de movimiento: `http://localhost:8000/api/motion/motion-boxes`
-- Procesado con overlay de movimiento: `http://localhost:8000/api/motion/motion-overlay`
-- Detección facial MediaPipe: `http://localhost:8000/api/mediapipe/face-box`
-- Malla facial MediaPipe: `http://localhost:8000/api/mediapipe/face-mesh`
-- Pose de cabeza MediaPipe: `http://localhost:8000/api/mediapipe/head-pose`
-- Detección de manos MediaPipe: `http://localhost:8000/api/mediapipe/hands`
-- Conteo de dedos MediaPipe: `http://localhost:8000/api/mediapipe/hands/finger-counter`
 - Frontend Angular: `http://localhost:4200/`
+- Backend: `http://localhost:8000/api/health`
+- Motion Detection: `http://localhost:4200/motion-detection`
+- Face Detection: `http://localhost:4200/face-detection`
+- Hand Detection: `http://localhost:4200/hand-detection`
+- Redireccion compatible: `http://localhost:4200/motion-lab`
 
-Nota: el frontend usa rutas `/api/...` relativas. En Docker funcionan por
-Nginx. Si ejecutas Angular directamente en `4200`, asegúrate de servir o
-proxificar `/api/` hacia el backend. Para probar la cámara, usa un origen
-seguro; la ruta recomendada es Nginx con HTTPS.
+Si se ejecuta Angular directamente en `4200`, las rutas `/api/...` deben estar
+proxificadas o servidas desde un mismo host que el backend. Para usar la camara
+en navegadores modernos, se recomienda probar desde el endpoint HTTPS de Nginx.
 
-## Ejecución con Docker
+## Ejecucion Con Docker
 
 Levantar todos los servicios:
 
@@ -255,42 +305,31 @@ Levantar todos los servicios:
 docker compose up
 ```
 
-Reconstruir imágenes y arrancar en segundo plano después de cambios en
-dependencias, Dockerfiles o configuración de frontend/backend:
+Reconstruir imagenes:
 
 ```sh
 docker compose up -d --build
 ```
 
-Docker Compose construye y ejecuta tres servicios:
+Servicios:
 
-- `backend`: API FastAPI expuesta en `http://localhost:8000/api/health`.
-- `frontend`: servidor de desarrollo Angular dentro del contenedor.
-- `nginx`: proxy HTTPS disponible en `https://localhost:8443/`; reenvía `/api/`
-  al backend y el resto de rutas al servidor Angular.
+- `backend`: FastAPI en `http://localhost:8000`.
+- `frontend`: servidor Angular dentro del contenedor.
+- `nginx`: proxy HTTPS en `https://localhost:8443/`.
 
-El `backend/Dockerfile` instala librerías nativas necesarias para OpenCV y
-MediaPipe en `python:3.12-slim`, y define `MPLCONFIGDIR=/tmp/matplotlib` para
-evitar problemas de escritura de caché cuando MediaPipe importa dependencias de
-Matplotlib. `docker/nginx/default.conf` usa el resolver interno de Docker
-(`127.0.0.11`) para que Nginx resuelva `frontend` y `backend` aunque sus IPs
-internas cambien tras un rebuild.
+Nginx reenvia `/api/` al backend y el resto de rutas al frontend. En red local
+tambien puede accederse con el nombre de la maquina, por ejemplo
+`https://homelab:8443/`.
 
-En una máquina de red local también puede accederse usando el nombre del host,
-por ejemplo `https://homelab:8443/` y `https://homelab:8443/api/health`.
-
-Los certificados locales usados por Nginx están en `docker/nginx/certs/`. Al
-usar certificados autofirmados, el navegador puede pedir confirmar la excepción
-de seguridad antes de cargar la aplicación.
-
-Si se modifica `docker/nginx/default.conf` con los contenedores ya levantados,
-recarga o reinicia Nginx para aplicar la nueva configuración:
+Si se modifica `docker/nginx/default.conf` con los contenedores levantados:
 
 ```sh
 docker compose restart nginx
 ```
 
-Comandos útiles de validación tras levantar Docker:
+## Ejemplos Con curl
+
+Salud:
 
 ```sh
 curl http://localhost:8000/api/health
@@ -299,7 +338,7 @@ curl http://localhost:8000/api/health/mediapipe
 curl -k https://localhost:8443/api/health
 ```
 
-Para probar los endpoints de MediaPipe con una imagen local:
+MediaPipe:
 
 ```sh
 curl -o face-box.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/face-box
@@ -309,81 +348,66 @@ curl -o hands.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediap
 curl -D finger-count.headers -o finger-count.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/mediapipe/hands/finger-counter
 ```
 
-## Pruebas y validación
+Motion:
+
+```sh
+curl -o motion.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion
+curl -o grayscale.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/grayscale
+curl -o blur.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/blur
+curl -o difference.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/difference
+curl -o threshold.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/threshold
+curl -o contours.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/contours
+curl -o boxes.jpg -F "frame=@/ruta/a/frame.jpg" http://localhost:8000/api/motion/motion-boxes
+curl -o overlay.jpg -F "frame=@/ruta/a/frame.jpg" -F "difference=@/ruta/a/difference.jpg" http://localhost:8000/api/motion/motion-overlay
+```
+
+## Uso De IA En El Proyecto
+
+La inteligencia artificial se ha usado como apoyo de desarrollo y aprendizaje,
+no como sustituto de la comprension tecnica del proyecto. En particular, se ha
+utilizado para:
+
+- Diseñar y revisar la arquitectura entre Angular, FastAPI, OpenCV, MediaPipe,
+  Docker Compose y Nginx.
+- Iterar sobre la implementacion de endpoints y vistas, manteniendo alineados
+  los contratos entre frontend y backend.
+- Explicar conceptos de vision por computador dentro de la interfaz y en este
+  README con un enfoque academico.
+- Auditar duplicaciones de contenido, coherencia visual, nombres de endpoints y
+  documentacion obsoleta.
+- Ayudar a interpretar tecnicas como diferencia temporal, landmarks, conteo de
+  dedos y estimacion de pose con `solvePnP`.
+
+Las decisiones finales de alcance, diseño funcional y validacion se han
+realizado revisando el codigo, ejecutando builds y tests, y contrastando que las
+vistas respondan al comportamiento esperado del proyecto.
+
+## Validacion
 
 Frontend:
 
 ```sh
 cd frontend
-npm test -- --watch=false
 npm run build
+npm test -- --watch=false
 ```
 
-Estado auditado:
+Backend:
 
-- Build Angular correcta.
-- Suite frontend correcta: 1 archivo de pruebas, 4 tests.
-- Routing frontend disponible con las páginas `/`, `/motion-detection`,
-  `/face-detection` y `/hand-detection`; `/motion-lab` redirige a
-  `/motion-detection`.
-- Endpoint de salud del backend disponible en `/api/health`.
-- Endpoint de salud de frames/OpenCV disponible en `/api/health/frame`.
-- Endpoint de salud de MediaPipe disponible en `/api/health/mediapipe`.
-- Endpoint de detección facial disponible en `/api/mediapipe/face-box` y devuelve
-  un JPEG con cajas faciales.
-- Endpoint de malla facial disponible en `/api/mediapipe/face-mesh` y devuelve
-  un JPEG con landmarks faciales.
-- Endpoint de pose de cabeza disponible en `/api/mediapipe/head-pose` y devuelve
-  un JPEG con ejes 3D semitransparentes y la cabecera
-  `X-Head-Pose-Direction`.
-- Endpoint de manos disponible en `/api/mediapipe/hands` y devuelve un JPEG con
-  landmarks y conexiones de manos.
-- Endpoint de conteo de dedos disponible en
-  `/api/mediapipe/hands/finger-counter` y devuelve un JPEG con la cabecera
-  `X-Finger-Count`.
-- Endpoint `/api/motion` disponible para recibir frames multipart en el campo
-  `frame` y devolver un JPEG.
-- Endpoint `/api/motion/grayscale` disponible para devolver un JPEG procesado en
-  escala de grises.
-- Endpoint `/api/motion/blur` disponible para devolver un JPEG procesado con
-  escala de grises y desenfoque gaussiano.
-- Endpoint `/api/motion/difference` disponible para devolver un JPEG procesado
-  con la diferencia respecto al frame anterior.
-- Endpoint `/api/motion/threshold` disponible para devolver un JPEG procesado
-  con umbral binario.
-- Endpoint `/api/motion/contours` disponible para devolver un JPEG procesado
-  con contornos dibujados sobre la imagen umbralizada.
-- Endpoint `/api/motion/motion-boxes` disponible para devolver un JPEG procesado
-  con rectángulos verdes sobre las áreas de movimiento relevantes.
-- Endpoint `/api/motion/motion-overlay` disponible para devolver el frame real
-  con rectángulos rojos sobre las áreas de movimiento relevantes.
-- Cámara disponible desde el componente Angular cuando el navegador concede permiso.
-- Visualización del vídeo original junto a las imágenes procesadas.
-- Página `/face-detection` disponible con secciones Box, Mesh y Pose en vivo,
-  preparada como grid 2x2 para una futura vista de análisis emocional.
-- Página `/hand-detection` disponible con visualizaciones de Landmarks y Finger
-  Count en vivo.
-- Panel de salud del backend disponible en la Home.
-- No existe todavía una suite de pruebas backend.
+```sh
+python3 -m compileall backend/app
+```
 
-## Estado y trabajo futuro
+Auditoria final del proyecto:
 
-El proyecto se encuentra en una fase inicial. La integración base entre
-frontend y backend ya está validada, pero todavía falta implementar el dominio
-principal de visión doméstica. Próximos pasos recomendados:
-
-- Extraer el procesamiento de imagen a un servicio backend dedicado cuando crezca.
-- Extraer la URL del backend a configuración de entorno cuando haya despliegues diferenciados.
-- Añadir pruebas backend con `pytest`.
-- Añadir controles de pausa, frecuencia de captura y selección de vista para
-  Face Detection y Hand Detection.
-- Ampliar componentes Angular para visualizar más resultados de visión.
-- Preparar configuración diferenciada para desarrollo y producción.
-
-## Consideraciones
-
-No deben versionarse secretos, archivos `.env`, entornos virtuales,
-`node_modules/`, builds, caches ni resultados de cobertura. Las dependencias se
-reconstruyen desde `backend/requirements.txt` y `frontend/package-lock.json`.
-Los certificados locales de desarrollo no deben reutilizarse como credenciales
-de producción.
+- Angular build correcto.
+- Suite frontend correcta: 1 archivo de pruebas, 3 tests.
+- Backend Python compilable con `compileall`.
+- Rutas publicas disponibles: `/`, `/motion-detection`, `/face-detection`,
+  `/hand-detection` y redireccion `/motion-lab`.
+- Las paginas de vision mantienen estructura academica consistente: introduccion,
+  tarjetas conceptuales, hovers explicativos y vistas procesadas.
+- Motion Detection conserva las 8 etapas del pipeline.
+- Face Detection muestra Box, Mesh y Pose en una grid de 3 vistas.
+- Hand Detection muestra Landmarks y Finger Count sin duplicar landmarks en la
+  vista de conteo.
