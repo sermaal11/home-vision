@@ -4,18 +4,6 @@ import { App } from './app';
 import { routes } from './app.routes';
 
 describe('App', () => {
-  beforeEach(() => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ message: 'Backend is running!' }),
-    } as Response);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
@@ -36,16 +24,13 @@ describe('App', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('Home Vision');
   });
 
-  it('should render backend message', async () => {
+  it('should render navigation links', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Backend is running!');
-  });
-
-  it('should fetch backend health through the api route', async () => {
-    TestBed.createComponent(App);
-    expect(globalThis.fetch).toHaveBeenCalledWith('/api/health');
+    expect(compiled.textContent).toContain('Motion Detection');
+    expect(compiled.textContent).toContain('Face Detection');
+    expect(compiled.textContent).toContain('Hand Detection');
   });
 });

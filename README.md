@@ -10,6 +10,8 @@ Nginx sobre HTTPS local.
 ## Objetivos del proyecto
 
 - Diseñar una base modular para una aplicación de visión por computador.
+- Servir como laboratorio académico donde cada vista explique qué técnica se
+  está usando y qué concepto de visión por computador representa.
 - Separar responsabilidades entre backend, frontend y proxy HTTP.
 - Validar la comunicación entre Angular y FastAPI en entorno local.
 - Probar captura de vídeo desde el navegador como base para futuras funciones de visión.

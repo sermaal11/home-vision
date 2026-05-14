@@ -137,4 +137,56 @@
 
 	</div>
 
+	<section class="space-y-4">
+
+		<div class="space-y-1">
+			<h3 class="text-lg font-semibold text-white">
+				Mapa de aprendizaje
+			</h3>
+			<p class="max-w-3xl text-sm leading-6 text-zinc-400">
+				Cada página enseña una pieza distinta del flujo de visión por computador:
+				captura, transformación de imagen, extracción de landmarks y estimación
+				geométrica.
+			</p>
+		</div>
+
+		<div class="grid gap-4 md:grid-cols-3">
+
+			<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+				<h4 class="text-sm font-semibold text-white">
+					OpenCV y NumPy
+				</h4>
+				<p class="mt-2 text-sm leading-6 text-zinc-400">
+					OpenCV opera sobre matrices NumPy: cada frame es una imagen convertida
+					en números. Esa base permite aplicar escala de grises, desenfoque,
+					diferencia entre frames, umbrales y contornos.
+				</p>
+			</article>
+
+			<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+				<h4 class="text-sm font-semibold text-white">
+					MediaPipe
+				</h4>
+				<p class="mt-2 text-sm leading-6 text-zinc-400">
+					MediaPipe aporta modelos preentrenados para detectar rostros, mallas
+					faciales y manos. El backend usa esos puntos para dibujar resultados
+					y construir estimaciones más complejas.
+				</p>
+			</article>
+
+			<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+				<h4 class="text-sm font-semibold text-white">
+					Geometría de cámara
+				</h4>
+				<p class="mt-2 text-sm leading-6 text-zinc-400">
+					La pose de cabeza combina landmarks 2D con un modelo 3D aproximado y
+					`solvePnP`, una técnica clásica para estimar orientación a partir de
+					puntos conocidos.
+				</p>
+			</article>
+
+		</div>
+
+	</section>
+
 </section>

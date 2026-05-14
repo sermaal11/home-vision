@@ -23,6 +23,40 @@
 		ocurre en esa etapa del proceso.
 	</div>
 
+	<section class="grid gap-4 md:grid-cols-3">
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				OpenCV
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				Procesa cada frame como una matriz de píxeles y aplica transformaciones
+				clásicas: conversión de color, desenfoque, diferencia y contornos.
+			</p>
+		</article>
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				Detección por diferencia
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				El movimiento se deduce comparando el frame actual con el anterior. No
+				reconoce objetos: localiza cambios visuales en el tiempo.
+			</p>
+		</article>
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				Segmentación
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				El umbral convierte cambios suaves en una máscara binaria. Los contornos
+				agrupan esa máscara para generar regiones útiles.
+			</p>
+		</article>
+
+	</section>
+
 	<div class="grid gap-4 md:grid-cols-2">
 
 		<div class="space-y-2">
@@ -42,7 +76,7 @@
 				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 					<p class="text-sm leading-6 text-zinc-100">
 						Frame real capturado por la cámara. Es la referencia visual que inicia
-						todo el proceso.
+						todo el proceso y se envía al backend como imagen JPEG.
 					</p>
 				</div>
 			</div>
@@ -64,8 +98,9 @@
 				/>
 				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 					<p class="text-sm leading-6 text-zinc-100">
-						Se elimina el color para trabajar solo con intensidad. Esto simplifica
-						los cálculos y reduce ruido innecesario.
+						OpenCV convierte de BGR a escala de grises para trabajar solo con
+						intensidad. Esto simplifica los cálculos y reduce información que no
+						aporta a la diferencia temporal.
 					</p>
 				</div>
 			</div>
@@ -87,8 +122,8 @@
 				/>
 				<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 					<p class="text-sm leading-6 text-zinc-100">
-						El desenfoque suaviza pequeños cambios de píxeles para que la detección
-						no reaccione tanto a grano, compresión o variaciones mínimas de luz.
+						El desenfoque gaussiano promedia píxeles vecinos. Así se amortiguan
+						grano, compresión y pequeñas variaciones de luz antes de comparar.
 					</p>
 				</div>
 			</div>

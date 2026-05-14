@@ -22,6 +22,40 @@
 		ocurre en esa detección.
 	</div>
 
+	<section class="grid gap-4 md:grid-cols-3">
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				Face Detection
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				MediaPipe localiza una región rectangular probable para el rostro. Es
+				útil cuando solo hace falta saber dónde está la cara.
+			</p>
+		</article>
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				Face Mesh
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				Face Mesh predice landmarks sobre ojos, nariz, boca y contorno facial.
+				Esos puntos convierten la cara en una estructura geométrica medible.
+			</p>
+		</article>
+
+		<article class="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
+			<h3 class="text-sm font-semibold text-white">
+				Head Pose
+			</h3>
+			<p class="mt-2 text-sm leading-6 text-zinc-400">
+				OpenCV `solvePnP` compara landmarks 2D con un modelo 3D aproximado para
+				estimar orientación y proyectar ejes sobre la imagen.
+			</p>
+		</article>
+
+	</section>
+
 	<section class="space-y-4">
 
 		<p
@@ -50,8 +84,9 @@
 					</ng-template>
 					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 						<p class="text-sm leading-6 text-zinc-100">
-							MediaPipe detecta el rostro y el backend dibuja un rectángulo sobre
-							la zona encontrada, junto con la confianza de la detección.
+							MediaPipe Face Detection devuelve una caja relativa al tamaño del
+							frame. El backend la escala a píxeles y dibuja la confianza de la
+							detección.
 						</p>
 					</div>
 				</div>
@@ -75,8 +110,9 @@
 					</ng-template>
 					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 						<p class="text-sm leading-6 text-zinc-100">
-							Face Mesh dibuja landmarks y conexiones sobre el rostro para
-							representar su geometría con más detalle que una caja.
+							Face Mesh produce una nube de landmarks faciales. Las conexiones
+							dibujadas permiten ver cómo el modelo entiende la geometría del
+							rostro.
 						</p>
 					</div>
 				</div>
@@ -105,8 +141,9 @@
 					</ng-template>
 					<div class="pointer-events-none absolute inset-0 flex items-start bg-zinc-950/80 p-4 opacity-0 transition duration-200 group-hover:opacity-100">
 						<p class="text-sm leading-6 text-zinc-100">
-							Head Pose usa landmarks faciales para marcar la punta de la nariz y
-							dibujar una referencia visual de la orientación de la cabeza.
+							Head Pose usa landmarks estables de Face Mesh, `solvePnP` y una
+							matriz de cámara aproximada para dibujar ejes 3D sutiles desde la
+							nariz.
 						</p>
 					</div>
 				</div>
